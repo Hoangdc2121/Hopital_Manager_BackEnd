@@ -7,3 +7,297 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  DOCTOR
+  MEDICAL_STAFF
+  PATIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH
+  VNPAY
+}
+
+enum InvoiceItemType {
+  SERVICE
+  MEDICINE
+  LAB_TEST
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  fullName String
+  email    String  @unique
+  password String
+  avatar   String?
+
+  gender      Gender?
+  dateOfBirth DateTime?
+  phoneNumber String?
+  address     String?
+
+  role     Role
+  isActive Boolean @default(true)
+
+  departmentId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  patientAppointments Appointment[] @relation("PatientAppointments")
+
+  medicalRecords MedicalRecord[] @relation("DoctorMedicalRecords")
+
+  notifications   Notification[]
+  payments        Payment[]
+  doctorSchedules DoctorSchedule[]
+}
+
+model Department {
+  id           Int           @id @default(autoincrement())
+  code         String        @unique
+  name         String
+  isActive     Boolean       @default(true)
+  users        User[]
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model DoctorSchedule {
+  id Int @id @default(autoincrement())
+
+  doctorId Int
+
+  dayOfWeek Int
+  startTime Int
+  endTime   Int
+
+  maxPatients Int
+
+  doctor User @relation(fields: [doctorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Appointment {
+  id Int @id @default(autoincrement())
+
+  patientId    Int
+  doctorId     Int
+  departmentId Int
+
+  appointmentDate DateTime
+
+  slotStart Int
+  slotEnd   Int
+
+  reason String?
+
+  status AppointmentStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient User @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctor  User @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  medicalRecord MedicalRecord?
+
+  invoice Invoice?
+}
+
+model MedicalRecord {
+  id Int @id @default(autoincrement())
+
+  appointmentId Int @unique
+  doctorId      Int
+  patientId     Int
+
+  symptoms   String?
+  diagnosis  String?
+  conclusion String?
+
+  createdAt DateTime @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+
+  doctor User @relation("DoctorMedicalRecords", fields: [doctorId], references: [id])
+
+  labOrders     LabOrder[]
+  prescriptions Prescription[]
+  updatedAt     DateTime       @updatedAt
+}
+
+model LabOrder {
+  id Int @id @default(autoincrement())
+
+  medicalRecordId Int
+
+  testName String
+  note     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  medicalRecord MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+
+  results LabResult[]
+}
+
+model LabResult {
+  id Int @id @default(autoincrement())
+
+  labOrderId Int
+
+  resultText String?
+  fileUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  labOrder LabOrder @relation(fields: [labOrderId], references: [id])
+}
+
+model Medicine {
+  id Int @id @default(autoincrement())
+
+  name  String
+  unit  String
+  price Float
+  stock Int
+
+  prescriptionItems PrescriptionItem[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Prescription {
+  id Int @id @default(autoincrement())
+
+  medicalRecordId Int
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  medicalRecord MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+
+  items PrescriptionItem[]
+}
+
+model PrescriptionItem {
+  id Int @id @default(autoincrement())
+
+  prescriptionId Int
+  medicineId     Int
+
+  dosage   String
+  days     Int
+  quantity Int
+  price    Float
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id])
+  medicine     Medicine     @relation(fields: [medicineId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Invoice {
+  id Int @id @default(autoincrement())
+
+  appointmentId Int @unique
+
+  totalAmount Float
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+
+  items     InvoiceItem[]
+  payments  Payment[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model InvoiceItem {
+  id Int @id @default(autoincrement())
+
+  invoiceId Int
+
+  type InvoiceItemType
+
+  name String
+
+  price    Float
+  quantity Int
+
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+
+  invoiceId Int
+  userId    Int
+
+  amount Float
+
+  method PaymentMethod
+  status PaymentStatus @default(PENDING)
+
+  vnpayTxnRef        String?
+  vnpayTransactionNo String?
+  vnpayResponseCode  String?
+
+  paidAt DateTime?
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  title   String
+  content String
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
