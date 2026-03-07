@@ -192,11 +192,11 @@ model LabResult {
 model Medicine {
   id Int @id @default(autoincrement())
 
-  name  String
-  unit  String
-  price Float
-  stock Int
-
+  name              String
+  unit              String
+  price             Int
+  stock             Int
+  isActive          Boolean            @default(true)
   prescriptionItems PrescriptionItem[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
