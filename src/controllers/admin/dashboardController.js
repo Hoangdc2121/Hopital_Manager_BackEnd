@@ -27,10 +27,10 @@ export const dashboardController = {
     getAppointmentByDepartment: async (req, res, next) => {
         try {
             const data = await dashboardService.getAppointmentByDepartment()
-            const response = responseSuccess(data, 'Phân bổ theo khoa thành công')
+            const response = responseSuccess(data, 'Phân bố theo khoa thành công')
             res.status(response.status).json(response)
         } catch (err) {
-            console.error('Phân bổ theo khoa thất bại', err)
+            console.error('Phân bố theo khoa thất bại', err)
             next(err)
         }
     },
@@ -57,8 +57,9 @@ export const dashboardController = {
     getAllAppointments: async (req, res, next) => {
         try {
             const status = req.query.status || ""
-            const data = await dashboardService.getAllAppointments(status)
-            const response = responseSuccess(data, 'Lấy danh sách lịch hẹn có phân trang thành công')
+            const page = req.query.page || 1
+            const data = await dashboardService.getAllAppointments(status,page)
+            const response = responseSuccess(data, '     thành công')
             res.status(response.status).json(response)
         } catch (err) {
             console.error('Lấy danh sách lịch hẹn có phân trang thất bại', err)

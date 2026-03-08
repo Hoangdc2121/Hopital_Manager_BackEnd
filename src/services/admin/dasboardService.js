@@ -33,7 +33,6 @@ export const dashboardService = {
       totalRevenue,
       totalAppointments,
       totalPatients,
-      cancelledAppointments,
       cancelRate
     }
   },
@@ -70,7 +69,6 @@ export const dashboardService = {
       appointments: 0
     }))
 
-    // ===== Doanh thu =====
     payments.forEach(p => {
       if (p.paidAt) {
         const m = new Date(p.paidAt).getMonth()
@@ -78,7 +76,7 @@ export const dashboardService = {
       }
     })
 
-    // ===== Lượt khám =====
+
     appointments.forEach(a => {
       const m = new Date(a.appointmentDate).getMonth()
       months[m].appointments += 1
@@ -119,7 +117,10 @@ export const dashboardService = {
     const limit = 5
     const doctors = await prisma.user.findMany({
       where: {
-        role: 'DOCTOR'
+        role: 'DOCTOR',
+        doctorAppointments: {
+          some: {}
+        }
       },
       select: {
         id: true,
@@ -143,8 +144,6 @@ export const dashboardService = {
     }
   },
   getDepartmentStats: async () => {
-
-    // 1️⃣ Lấy danh sách khoa
     const departments = await prisma.department.findMany({
       select: {
         id: true,
@@ -152,18 +151,18 @@ export const dashboardService = {
       }
     })
 
-    // 2️⃣ Thống kê
+
     const result = await Promise.all(
       departments.map(async (dept) => {
 
-        // Đếm lượt khám
+
         const totalAppointments = await prisma.appointment.count({
           where: {
             departmentId: dept.id
           }
         })
 
-        // Tính tổng doanh thu
+
         const revenue = await prisma.invoice.aggregate({
           _sum: {
             totalAmount: true

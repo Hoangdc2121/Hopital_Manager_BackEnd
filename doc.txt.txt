@@ -37,3 +37,12 @@ Lấy danh sách thuốc có phân trạng và lọc tên đơn vị giá, số 
 
 
 Tổng quan admin:
+
+Lấy tổng quan admin: http://localhost:7000/api/admin/dashboard/getOverView
+Lấy tổng doanh thua và tổng lượt tháng theo biểu đồ cột đôi admin : http://localhost:7000/api/admin/dashboard/getRevenueAndAppointmentsChart
+Phân bố theo khoa: http://localhost:7000/api/admin/dashboard/getAppointmentByDepartment
+Lấy top bác sĩ có ca khám nhiều nhất:  http://localhost:7000/api/admin/dashboard/getTopDoctors
+Thống kê theo khoa:  http://localhost:7000/api/admin/dashboard/getDepartmentStats
+Lấy danh sách lịch hẹn có phân trang:  http://localhost:7000/api/admin/dashboard/getAllAppointments
+
+
