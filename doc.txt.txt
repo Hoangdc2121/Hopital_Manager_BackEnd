@@ -17,10 +17,10 @@ Lấy danh sách khoa có phân trang và lọc theo tên khoa: http://localhost
 Quản lý nhân sự:
 
 Tạo nhân sự: http://localhost:7000/api/admin/account/createAccount truyền fullName, email, password, phoneNumber, role theo role enum  ADMIN, DOCTOR ,MEDICAL_STAFF, PATIENT,
-có thể truyền departmentId khi tạo role bác sĩ 
+có thể truyền departmentId khi tạo role bác sĩ, có thể gửi ảnh (avatar)
     * Lấy api tất cả khoa: http://localhost:7000/api/admin/department/getAllDepartmentsSimple
 Cập nhật thông tin nhân sự:  http://localhost:7000/api/admin/account/updateInfoAccount/:accountId
-    * fullName, email, role, phoneNumber, gender theo enum MALE,FEMALE, dateOfBirth, address, departmentId
+    * fullName, email, role, phoneNumber, gender theo enum MALE,FEMALE, dateOfBirth, address, departmentId có thể cập nhật ảnh (avatar)
 
 Cập nhật trạng thái nhân sự nút toggle: http://localhost:7000/api/admin/account/updateAccountStatus/:accountId
 Lấy danh sách nhân sự có phân trang và lọc theo tên và select theo role: http://localhost:7000/api/admin/account/getAllAcounts
