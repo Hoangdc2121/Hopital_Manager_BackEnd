@@ -109,8 +109,8 @@ model DoctorSchedule {
 }
 
 model Appointment {
-  id Int @id @default(autoincrement())
-
+  id           Int    @id @default(autoincrement())
+  code         String @unique
   patientId    Int
   doctorId     Int
   departmentId Int

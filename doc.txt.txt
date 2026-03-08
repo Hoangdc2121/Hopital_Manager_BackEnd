@@ -1,0 +1,39 @@
+Đăng nhập: 
+http://localhost:7000/api/auth/login
+
+TK Mk Admin: admin1@gmail.com  admin1 
+
+Đăng kí bệnh nhân: 
+http://localhost:7000/api/auth/registerPatient truyền fullName, email, password (có ít nhất 8 kí tự bao gồm 1 chữ cái viết hoa, có số có kí tự đặc biệt), phoneNumber
+
+Role Admin:
+Quản lý Khoa
+Tạo khoa: http://localhost:7000/api/admin/department/createDepartment truyền name
+Cập nhật thông tin khoa: http://localhost:7000/api/admin/department/updateDepartmentInfo/:departmentId truyền name
+Cập nhật trạng thái khoa nút toggle : http://localhost:7000/api/admin/department/updateDepartmentStatus/:departmentId
+Lấy danh sách khoa có phân trang và lọc theo tên khoa: http://localhost:7000/api/admin/department/getAllDepartments
+    * Lọc: http://localhost:7000/api/admin/department/getAllDepartments?search=Duoc
+
+Quản lý nhân sự:
+
+Tạo nhân sự: http://localhost:7000/api/admin/account/createAccount truyền fullName, email, password, phoneNumber, role theo role enum  ADMIN, DOCTOR ,MEDICAL_STAFF, PATIENT,
+có thể truyền departmentId khi tạo role bác sĩ 
+    * Lấy api tất cả khoa: http://localhost:7000/api/admin/department/getAllDepartmentsSimple
+Cập nhật thông tin nhân sự:  http://localhost:7000/api/admin/account/updateInfoAccount/:accountId
+    * fullName, email, role, phoneNumber, gender theo enum MALE,FEMALE, dateOfBirth, address, departmentId
+
+Cập nhật trạng thái nhân sự nút toggle: http://localhost:7000/api/admin/account/updateAccountStatus/:accountId
+Lấy danh sách nhân sự có phân trang và lọc theo tên và select theo role: http://localhost:7000/api/admin/account/getAllAcounts
+
+Lấy danh sách bệnh nhân có lọc tên và phân trang và lọc theo giới tính: http://localhost:7000/api/admin/account/getAllPatients
+Lấy tổng quan nhân sự : http://localhost:7000/api/admin/account/getOverViewStaff
+Lấy tổng quan bệnh nhân: http://localhost:7000/api/admin/account/getOverViewPatient
+
+Quản lý thuốc: 
+Tạo thuốc: http://localhost:7000/api/admin/medicine/createMedicine truyền name, unit, price, stock
+Cập nhật thông tin thuốc : http://localhost:7000/api/admin/medicine/updateInfoMedicine/:medicineId truyền name, unit, price, stock
+Cập nhật trạng thái thuộc toggle : http://localhost:7000/api/admin/medicine/updateMedicineStatus/:medicineId
+Lấy danh sách thuốc có phân trạng và lọc tên đơn vị giá, số lượng : http://localhost:7000/api/admin/medicine/getAllMedicines?search=300
+
+
+Tổng quan admin:
