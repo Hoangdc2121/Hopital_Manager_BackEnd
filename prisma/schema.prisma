@@ -26,7 +26,6 @@ enum AppointmentStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
-  RESCHEDULED
   NO_SHOW
 }
 
@@ -47,6 +46,13 @@ enum InvoiceItemType {
   LAB_TEST
 }
 
+enum AppointmentRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCEL
+}
+
 model User {
   id Int @id @default(autoincrement())
 
@@ -60,7 +66,8 @@ model User {
   phoneNumber String?
   address     String?
 
-  role     Role
+  role Role
+
   isActive Boolean @default(true)
 
   departmentId Int?
@@ -73,22 +80,29 @@ model User {
   doctorAppointments  Appointment[] @relation("DoctorAppointments")
   patientAppointments Appointment[] @relation("PatientAppointments")
 
-  medicalRecords MedicalRecord[] @relation("DoctorMedicalRecords")
+  doctorMedicalRecords  MedicalRecord[] @relation("DoctorMedicalRecords")
+  patientMedicalRecords MedicalRecord[] @relation("PatientMedicalRecords")
 
-  notifications   Notification[]
-  payments        Payment[]
-  doctorSchedules DoctorSchedule[]
+  payments         Payment[]
+  notifications    Notification[]
+  doctorSchedules  DoctorSchedule[]
+  vitalSigns       VitalSign[]
+  sentRequests     AppointmentRequest[] @relation("PatientRequest")
+  reviewedRequests AppointmentRequest[] @relation("StaffReview")
 }
 
 model Department {
-  id           Int           @id @default(autoincrement())
-  code         String        @unique
-  name         String
-  isActive     Boolean       @default(true)
+  id   Int    @id @default(autoincrement())
+  code String @unique
+  name String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   users        User[]
   appointments Appointment[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
 }
 
 model DoctorSchedule {
@@ -100,29 +114,31 @@ model DoctorSchedule {
   startTime Int
   endTime   Int
 
-  maxPatients Int
+  slotDuration Int
+  isActive Boolean @default(true)
 
   doctor User @relation(fields: [doctorId], references: [id])
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Appointment {
-  id           Int    @id @default(autoincrement())
-  code         String @unique
+  id Int @id @default(autoincrement())
+
+  code String @unique
+
   patientId    Int
   doctorId     Int
   departmentId Int
 
   appointmentDate DateTime
 
-  slotStart Int
-  slotEnd   Int
-
   reason String?
 
   status AppointmentStatus @default(PENDING)
+
+  checkedInById Int?
+  checkedInAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,9 +148,33 @@ model Appointment {
 
   department Department @relation(fields: [departmentId], references: [id])
 
-  medicalRecord MedicalRecord?
+  vitalSigns          VitalSign[]
+  medicalRecord       MedicalRecord?
+  invoice             Invoice?
+  appointmentRequests AppointmentRequest[]
+}
 
-  invoice Invoice?
+model VitalSign {
+  id Int @id @default(autoincrement())
+
+  appointmentId Int
+  recordedById  Int
+
+  bloodPressure   String?
+  heartRate       Int?
+  temperature     Float?
+  spo2            Int?
+  respiratoryRate Int?
+
+  height Float?
+  weight Float?
+
+  note String?
+
+  createdAt DateTime @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  recordedBy  User        @relation(fields: [recordedById], references: [id])
 }
 
 model MedicalRecord {
@@ -149,14 +189,15 @@ model MedicalRecord {
   conclusion String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   appointment Appointment @relation(fields: [appointmentId], references: [id])
 
-  doctor User @relation("DoctorMedicalRecords", fields: [doctorId], references: [id])
+  doctor  User @relation("DoctorMedicalRecords", fields: [doctorId], references: [id])
+  patient User @relation("PatientMedicalRecords", fields: [patientId], references: [id])
 
   labOrders     LabOrder[]
   prescriptions Prescription[]
-  updatedAt     DateTime       @updatedAt
 }
 
 model LabOrder {
@@ -168,7 +209,6 @@ model LabOrder {
   note     String?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   medicalRecord MedicalRecord @relation(fields: [medicalRecordId], references: [id])
 
@@ -184,7 +224,6 @@ model LabResult {
   fileUrl    String?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   labOrder LabOrder @relation(fields: [labOrderId], references: [id])
 }
@@ -192,14 +231,17 @@ model LabResult {
 model Medicine {
   id Int @id @default(autoincrement())
 
-  name              String
-  unit              String
-  price             Int
-  stock             Int
-  isActive          Boolean            @default(true)
+  name  String
+  unit  String
+  price Float
+  stock Int
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   prescriptionItems PrescriptionItem[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
 }
 
 model Prescription {
@@ -207,8 +249,8 @@ model Prescription {
 
   medicalRecordId Int
 
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt DateTime @default(now())
+
   medicalRecord MedicalRecord @relation(fields: [medicalRecordId], references: [id])
 
   items PrescriptionItem[]
@@ -227,8 +269,6 @@ model PrescriptionItem {
 
   prescription Prescription @relation(fields: [prescriptionId], references: [id])
   medicine     Medicine     @relation(fields: [medicineId], references: [id])
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
 }
 
 model Invoice {
@@ -238,12 +278,13 @@ model Invoice {
 
   totalAmount Float
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   appointment Appointment @relation(fields: [appointmentId], references: [id])
 
-  items     InvoiceItem[]
-  payments  Payment[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  items    InvoiceItem[]
+  payments Payment[]
 }
 
 model InvoiceItem {
@@ -258,9 +299,7 @@ model InvoiceItem {
   price    Float
   quantity Int
 
-  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
 }
 
 model Payment {
@@ -284,7 +323,6 @@ model Payment {
   user    User    @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Notification {
@@ -295,9 +333,35 @@ model Notification {
   title   String
   content String
 
-  isRead    Boolean  @default(false)
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model AppointmentRequest {
+  id Int @id @default(autoincrement())
+
+  appointmentId Int
+  patientId     Int
+
+  status AppointmentRequestStatus @default(PENDING)
+
+  newDoctorId  Int?
+  newDate      DateTime?
+  newSlotStart Int?
+  newSlotEnd   Int?
+
+  note String?
+
+  reviewedById Int?
+  reviewedAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  patient     User        @relation("PatientRequest", fields: [patientId], references: [id])
+  reviewedBy  User?       @relation("StaffReview", fields: [reviewedById], references: [id])
 }
