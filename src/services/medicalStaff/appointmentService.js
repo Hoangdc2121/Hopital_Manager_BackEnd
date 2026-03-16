@@ -1,8 +1,8 @@
-import { NotFoundException } from "../../common/helpers/exception.helper"
-import prisma from "../../common/prisma/initPrisma"
+import { NotFoundException } from "../../common/helpers/exception.helper.js"
+import prisma from "../../common/prisma/initPrisma.js"
 
 export const appointmentService = {
-    getOverView: async () => {
+    getOverViewAppointment: async () => {
         const startDay = new Date()
         startDay.setHours(0, 0, 0, 0)
         const endDay = new Date()
@@ -40,7 +40,7 @@ export const appointmentService = {
 
         const whereCondition = {
             status: {
-                not: ['WAITING', 'IN_PROGRESS']
+                in: ['PENDING', 'COMPLETED', 'CANCELLED']
             },
             ...(departmentId ? {
                 departmentId: Number(departmentId)
@@ -62,9 +62,6 @@ export const appointmentService = {
                     id: true,
                     code: true,
                     appointmentDate: true,
-                    slotStart: true,
-                    slotEnd: true,
-                    reason: true,
                     status: true,
                     patient: {
                         select: {
@@ -103,16 +100,91 @@ export const appointmentService = {
             }
         }
     },
-    approveAppointment: async (appointmentId) => {
+    getAllRequestAppointments: async (status, page) => {
+        const limit = 10
+        const skip = (Number(page) - 1) * limit
+
+        const whereCondition = {
+            ...(status ? {
+                status: status
+            } : {})
+        }
+        const [requests, totalRequests] = await Promise.all([
+            prisma.appointmentRequest.findMany({
+                where: whereCondition,
+                include: {
+                    appointment: true,
+                    oldDoctor: true,
+                    newDoctor: true,
+                    patient: true
+                }
+            }),
+            prisma.appointmentRequest.count({
+                where: whereCondition
+            })
+        ])
+        return {
+            requests,
+            pagination: {
+                page: Number(page),
+                limit: limit,
+                total: totalRequests,
+                totalPages: Math.ceil(totalRequests / limit)
+            }
+        }
+    },
+    confirmAppointment: async (appointmentId) => {
         const appointment = await prisma.appointment.findUnique({
             where: {
                 id: Number(appointmentId)
             }
         })
         if (!appointment) {
-            throw new NotFoundException('Không tìm thấy lịch khám này')
+            throw new NotFoundException('Không tìm lấy lịch này')
         }
-        // const
+        await prisma.appointment.update({
+            where: {
+                status: 'CONFIRMED'
+            }
+        })
+    },
+    cancelAppointment: async (appointmentId, data) => {
+        const { reason } = data
+
+        const appointment = await prisma.appointment.findUnique({
+            where: { id: Number(appointmentId) },
+            include: {
+                patient: true,
+                doctor: true,
+                department: true
+            }
+        })
+
+        if (!appointment) {
+            throw new NotFoundException('Không tìm thấy lịch khám')
+        }
+
+    
+        await prisma.appointment.update({
+            where: { id: Number(appointmentId) },
+            data: {
+                status: 'CANCELLED',
+                reason: reason ? reason.trim() : null
+            }
+        })
+
+        const date = new Date(appointment.appointmentDate)
+        const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+        const dateStr = date.toLocaleDateString('vi-VN')
+
+   
+        await prisma.notification.create({
+            data: {
+                userId: appointment.patient.id,
+                title: "Lịch khám đã bị hủy",
+                message: `Lịch khám lúc ${timeStr} ngày ${dateStr} với bác sĩ ${appointment.doctor.fullName} (${appointment.department.name}) đã bị hủy.${reason ? ` Lý do: ${reason}` : ''}`
+            }
+        })
     }
 
 }

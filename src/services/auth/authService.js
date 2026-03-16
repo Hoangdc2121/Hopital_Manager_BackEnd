@@ -1,4 +1,4 @@
-import { BadrequestException, NotFoundException } from "../../common/helpers/exception.helper.js"
+import { BadrequestException, ConflictException, NotFoundException } from "../../common/helpers/exception.helper.js"
 import prisma from "../../common/prisma/initPrisma.js"
 import validateMissingFields from "../../utils/validateFields.js"
 import bcrypt from 'bcrypt'

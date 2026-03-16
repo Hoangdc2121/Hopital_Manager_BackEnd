@@ -50,6 +50,11 @@ enum AppointmentRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum AppointmentRequestType {
+  CHANGE_DOCTOR
+  CHANGE_TIME
   CANCEL
 }
 
@@ -83,12 +88,14 @@ model User {
   doctorMedicalRecords  MedicalRecord[] @relation("DoctorMedicalRecords")
   patientMedicalRecords MedicalRecord[] @relation("PatientMedicalRecords")
 
-  payments         Payment[]
-  notifications    Notification[]
-  doctorSchedules  DoctorSchedule[]
-  vitalSigns       VitalSign[]
-  sentRequests     AppointmentRequest[] @relation("PatientRequest")
-  reviewedRequests AppointmentRequest[] @relation("StaffReview")
+  payments          Payment[]
+  notifications     Notification[]
+  doctorSchedules   DoctorSchedule[]
+  vitalSigns        VitalSign[]
+  sentRequests      AppointmentRequest[] @relation("PatientRequest")
+  reviewedRequests  AppointmentRequest[] @relation("StaffReview")
+  oldDoctorRequests AppointmentRequest[] @relation("OldDoctor")
+  newDoctorRequests AppointmentRequest[] @relation("NewDoctor")
 }
 
 model Department {
@@ -115,7 +122,7 @@ model DoctorSchedule {
   endTime   Int
 
   slotDuration Int
-  isActive Boolean @default(true)
+  isActive     Boolean @default(true)
 
   doctor User @relation(fields: [doctorId], references: [id])
 
@@ -348,12 +355,13 @@ model AppointmentRequest {
 
   status AppointmentRequestStatus @default(PENDING)
 
-  newDoctorId  Int?
-  newDate      DateTime?
-  newSlotStart Int?
-  newSlotEnd   Int?
+  oldDoctorId Int?
+  oldDate     DateTime?
 
-  note String?
+  newDoctorId Int?
+  newDate     DateTime?
+  type        AppointmentRequestType
+  note        String?
 
   reviewedById Int?
   reviewedAt   DateTime?
@@ -362,6 +370,12 @@ model AppointmentRequest {
   updatedAt DateTime @updatedAt
 
   appointment Appointment @relation(fields: [appointmentId], references: [id])
-  patient     User        @relation("PatientRequest", fields: [patientId], references: [id])
-  reviewedBy  User?       @relation("StaffReview", fields: [reviewedById], references: [id])
+
+  patient User @relation("PatientRequest", fields: [patientId], references: [id])
+
+  reviewedBy User? @relation("StaffReview", fields: [reviewedById], references: [id])
+
+  oldDoctor User? @relation("OldDoctor", fields: [oldDoctorId], references: [id])
+
+  newDoctor User? @relation("NewDoctor", fields: [newDoctorId], references: [id])
 }

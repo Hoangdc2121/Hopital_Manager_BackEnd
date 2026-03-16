@@ -1,4 +1,4 @@
-import prisma from "../../common/prisma/initPrisma"
+import prisma from "../../common/prisma/initPrisma.js"
 
 export const dashboardService  = {
     getOverView: async (patientId) => {
@@ -56,12 +56,13 @@ export const dashboardService  = {
                     gt : now
                 }
             },
+            orderBy : {
+                appointmentDate : 'asc'
+            },
             select : {
                 id : true,
                 code : true,
                 appointmentDate : true,
-                slotStart : true,
-                slotEnd : true,
                 department : {
                     select : {
                         id : true,
@@ -93,8 +94,6 @@ export const dashboardService  = {
                 id : true,
                 code : true,
                 appointmentDate : true,
-                slotStart : true,
-                slotEnd : true,
                 department : {
                     select : {
                         id : true,
