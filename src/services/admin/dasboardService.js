@@ -201,8 +201,6 @@ export const dashboardService = {
         select: {
           code: true,
           appointmentDate: true,
-          slotStart: true,
-          slotEnd: true,
           reason: true,
           status: true,
           patient: {
