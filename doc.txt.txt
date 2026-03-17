@@ -45,4 +45,23 @@ Lấy top bác sĩ có ca khám nhiều nhất:  http://localhost:7000/api/admin
 Thống kê theo khoa:  http://localhost:7000/api/admin/dashboard/getDepartmentStats
 Lấy danh sách lịch hẹn có phân trang:  http://localhost:7000/api/admin/dashboard/getAllAppointments
 
+Quản lý lịch làm việc:
+Lấy danh sách bác sĩ : http://localhost:7000/api/admin/doctor/getAllDoctorsSimple
+Tạo lịch làm việc: http://localhost:7000/api/admin/doctor/createDoctorSchedule 
+    * truyền doctorId, dayOfWeek, startTime, endTime, slotDuration là int hết, startTime endTime lưu bằng phút á
+
+
+Cập nhật lịch làm việc của bác sĩ đó: http://localhost:7000/api/admin/doctor/updateDoctorScheduleInfo/:doctorScheduleId
+    * truyền dayOfWeek, startTime, endTime, slotDuration là int hết
+
+Cập nhật trạng thái ca làm việc của bác sĩ đó nút toggle: http://localhost:7000/api/admin/doctor/updateDoctorScheduleStatus/:doctorScheduleId
+
+Lấy danh sách lịch khám của bác sĩ có phân trang và lọc theo tên: http://localhost:7000/api/admin/doctor/getAllDoctorSchedules
+    * Ví dụ: http://localhost:7000/api/admin/doctor/getAllDoctorSchedules?search=Nguyễn Văn C
+
+Tự chọn có thể thêm xóa cứng:
+Xoá lịch lịch làm bác sĩ: http://localhost:7000/api/admin/doctor/removeDoctorSchedule/:doctorScheduleId
+
+
+
 

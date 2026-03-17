@@ -84,20 +84,29 @@ export const appointmentService = {
 
         const slots = []
 
-        for (const s of schedule) {
+        const now = new Date()
+        const isToday = targetDate.toDateString() === now.toDateString()
 
+        for (const s of schedule) {
             let current = s.startTime
 
             while (current + s.slotDuration <= s.endTime) {
-
                 const hour = Math.floor(current / 60)
                 const minute = current % 60
 
                 const slotDate = new Date(targetDate)
                 slotDate.setHours(hour, minute, 0, 0)
 
-                if (!bookedSlots.includes(slotDate.getTime())) {
-                    slots.push(slotDate)
+                const slotTime = slotDate.getTime()
+                const isBooked = bookedSlots.includes(slotTime)
+                const isPast = slotTime < now.getTime()
+
+                if (!isBooked) {
+                    if (isToday && isPast) {
+                 
+                    } else {
+                        slots.push(slotDate)
+                    }
                 }
 
                 current += s.slotDuration

@@ -118,6 +118,21 @@ export const doctorService = {
             updateDoctorScheduleStatus
         }
     },
+    removeDoctorSchedule: async (doctorScheduleId) => {
+        const doctorSchedule = await prisma.doctorSchedule.findUnique({
+            where: {
+                id: Number(doctorScheduleId)
+            }
+        })
+        if (!doctorSchedule) {
+            throw new NotFoundException("Không tìm thấy lịch bác sĩ")
+        }
+        await prisma.doctorSchedule.delete({
+            where: {
+                id: Number(doctorScheduleId)
+            }
+        })
+    },
     getAllDoctorSchedules: async (search, page) => {
         const limit = 10
         const skip = (Number(page) - 1) * limit
@@ -164,8 +179,13 @@ export const doctorService = {
                 where: whereCondition
             })
         ])
+        const formattedSchedules = doctorSchedules.map((s) => ({
+            ...s,
+            startHour: `${Math.floor(s.startTime / 60)}:${String(s.startTime % 60).padStart(2, "0")}`,
+            endHour: `${Math.floor(s.endTime / 60)}:${String(s.endTime % 60).padStart(2, "0")}`,
+        }))
         return {
-            doctorSchedules,
+            doctorSchedules: formattedSchedules,
             pagination: {
                 page: Number(page),
                 limit: limit,

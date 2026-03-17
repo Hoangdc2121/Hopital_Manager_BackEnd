@@ -38,4 +38,29 @@ export const appointmentController = {
             next(err)
         }
     },
+    confirmAppointment : async (req,res,next) => {
+        try {
+            const appointmentId = req.params.appointmentId
+            const data = await appointmentService.confirmAppointment(appointmentId)
+            const response = responseSuccess(data,'Xác nhận lịch khám thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Xác nhận lịch khám thất bại',err)
+            next(err)
+        }
+    },
+    cancelAppointment: async (req,res,next) => {
+        try {
+            const appointmentId = req.params.appointmentId
+            const data = await appointmentService.cancelAppointment(appointmentId,req.body)
+            const response =   responseSuccess(data,'Hủy lịch khám thành công')
+         res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Hủy lịch khám thất bại',err)
+            next(err)
+        }
+    },
+    changeAppointment: async () => {
+        
+    }
 }

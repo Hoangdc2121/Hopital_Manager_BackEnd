@@ -1,79 +1,83 @@
 import prisma from "../../common/prisma/initPrisma.js"
 
-export const dashboardService  = {
+export const dashboardService = {
     getOverView: async (patientId) => {
         const now = new Date()
-        const [nextAppointment,totalAppointments, totalAppointmentsComming, totalAppointmentsSucces] = await Promise.all([
+        const [nextAppointment, totalAppointments, totalAppointmentsComming, totalAppointmentsSucces] = await Promise.all([
             prisma.appointment.findFirst({
-                where : {
-                    status : 'PENDING',
-                    patientId : Number(patientId),
-                    appointmentDate : {
-                        gt : now
+                where: {
+                    status: 'PENDING',
+                    patientId: Number(patientId),
+                    appointmentDate: {
+                        gt: now
                     }
                 },
-                orderBy : {
-                    appointmentDate : 'asc'
+                orderBy: {
+                    appointmentDate: 'asc'
                 }
             }),
             prisma.appointment.count({
-                where : {
-                    patientId : Number(patientId)
+                where: {
+                    patientId: Number(patientId)
                 }
             }),
             prisma.appointment.count({
-                where : {
-                    status : 'PENDING',
-                     patientId : Number(patientId),
-                     appointmentDate : {
-                        gt : now
-                     }
+                where: {
+                    status: 'PENDING',
+                    patientId: Number(patientId),
+                    appointmentDate: {
+                        gt: now
+                    }
                 }
             }),
             prisma.appointment.count({
-                where : {
-                    patientId : Number(patientId),
-                    status : 'COMPLETED'
+                where: {
+                    patientId: Number(patientId),
+                    status: 'COMPLETED'
                 }
             })
         ])
-        const diffMs = nextAppointment.appointmentDate.getTime() - now.getTime()
+        let diffMs = null
+
+        if (nextAppointment) {
+            diffMs = nextAppointment.appointmentDate.getTime() - now.getTime()
+        }
         return {
-            nextAppointment : diffMs,
+            nextAppointment: diffMs,
             totalAppointments,
             totalAppointmentsComming,
             totalAppointmentsSucces
         }
     },
-    getAllAppointments : async (patientId) => {
+    getAllAppointments: async (patientId) => {
         const now = new Date
 
         const appointments = await prisma.appointment.findMany({
-            where : {
-                status : 'PENDING',
-                patientId : Number(patientId),
-                appointmentDate : {
-                    gt : now
+            where: {
+                status: 'PENDING',
+                patientId: Number(patientId),
+                appointmentDate: {
+                    gt: now
                 }
             },
-            orderBy : {
-                appointmentDate : 'asc'
+            orderBy: {
+                appointmentDate: 'asc'
             },
-            select : {
-                id : true,
-                code : true,
-                appointmentDate : true,
-                department : {
-                    select : {
-                        id : true,
-                        name : true
+            select: {
+                id: true,
+                code: true,
+                appointmentDate: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true
                     }
                 },
-                doctor : {
-                    select : {
-                        id : true,
-                        fullName : true,
-                        role : true
+                doctor: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        role: true
                     }
                 }
             }
@@ -84,27 +88,27 @@ export const dashboardService  = {
     },
     getHistoryAppointments: async (patientId) => {
         const appointments = await prisma.appointment.findMany({
-            where : {
-                patientId : Number(patientId),
-                status : {
-                    in : ['COMPLETED', 'CANCELLED', 'NO_SHOW']
+            where: {
+                patientId: Number(patientId),
+                status: {
+                    in: ['COMPLETED', 'CANCELLED', 'NO_SHOW']
                 }
             },
-             select : {
-                id : true,
-                code : true,
-                appointmentDate : true,
-                department : {
-                    select : {
-                        id : true,
-                        name : true
+            select: {
+                id: true,
+                code: true,
+                appointmentDate: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true
                     }
                 },
-                doctor : {
-                    select : {
-                        id : true,
-                        fullName : true,
-                        role : true
+                doctor: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        role: true
                     }
                 }
             }

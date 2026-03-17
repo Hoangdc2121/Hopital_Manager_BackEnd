@@ -8,5 +8,5 @@ router.post('/createDoctorSchedule',doctorController.createDoctorSchedule)
 router.put('/updateDoctorScheduleInfo/:doctorScheduleId',doctorController.updateDoctorScheduleInfo)
 router.put('/updateDoctorScheduleStatus/:doctorScheduleId',doctorController.updateDoctorScheduleStatus)
 router.get('/getAllDoctorSchedules',doctorController.getAllDoctorSchedules)
-
+router.delete('/removeDoctorSchedule/:doctorScheduleId',doctorController.removeDoctorSchedule)
 export default router

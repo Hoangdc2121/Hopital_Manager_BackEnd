@@ -25,7 +25,7 @@ export const doctorController = {
     updateDoctorScheduleInfo: async (req, res, next) => {
         try {
             const doctorScheduleId = req.params.doctorScheduleId
-            const data = await doctorService.updateDoctorScheduleInfo(doctorScheduleId,req.body)
+            const data = await doctorService.updateDoctorScheduleInfo(doctorScheduleId, req.body)
             const response = responseSuccess(data, 'Cập nhật lịch làm việc cho bác sĩ thành công')
             res.status(response.status).json(response)
         } catch (err) {
@@ -33,7 +33,7 @@ export const doctorController = {
             next(err)
         }
     },
-     updateDoctorScheduleStatus: async (req, res, next) => {
+    updateDoctorScheduleStatus: async (req, res, next) => {
         try {
             const doctorScheduleId = req.params.doctorScheduleId
             const data = await doctorService.updateDoctorScheduleStatus(doctorScheduleId)
@@ -44,12 +44,23 @@ export const doctorController = {
             next(err)
         }
     },
-    getAllDoctorSchedules: async (req,res,next) => {
+    removeDoctorSchedule: async (req, res, next) => {
         try {
-            const search = req.query.search 
+            const doctorScheduleId = req.params.doctorScheduleId
+            await doctorService.removeDoctorSchedule(doctorScheduleId)
+            const response = responseSuccess(null, 'Xóa lịch làm việc cho bác sĩ thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Xóa lịch làm việc cho bác sĩ thất bại', err)
+            next(err)
+        }
+    },
+    getAllDoctorSchedules: async (req, res, next) => {
+        try {
+            const search = req.query.search
             const page = req.query.page || 1
-            const data = await doctorService.getAllDoctorSchedules(search,page)
-            const response = responseSuccess(data,'Lấy danh sách lịch làm của bác sĩ có phân trang thành công')
+            const data = await doctorService.getAllDoctorSchedules(search, page)
+            const response = responseSuccess(data, 'Lấy danh sách lịch làm của bác sĩ có phân trang thành công')
             res.status(response.status).json(response)
         } catch (err) {
             console.error('Lấy danh sách lịch làm của bác sĩ có phân trang thất bại', err)

@@ -6,4 +6,6 @@ const router = express.Router()
 router.get('/getOverViewAppointment', appointmentController.getOverViewAppointment)
 router.get('/getAllAppointments', appointmentController.getAllAppointments)
 router.get('/getAllRequestAppointments', appointmentController.getAllRequestAppointments)
+router.put('/confirmAppointment', appointmentController.confirmAppointment)
+router.put('/getAllRequestAppointments', appointmentController.cancelAppointment)
 export default router
