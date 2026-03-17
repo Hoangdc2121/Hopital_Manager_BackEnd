@@ -15,7 +15,7 @@ export const dashboardController = {
     getRevenueAndAppointmentsChart: async (req, res, next) => {
         try {
             const from = req.query.from || new Date()
-            const to = req.query.t0 || new Date()
+            const to = req.query.to || new Date()
             const data = await dashboardService.getRevenueAndAppointmentsChart(from, to)
             const response = responseSuccess(data, 'Lấy tổng doanh thua và tổng lượt tháng theo biểu đồ cột đôi admin thành công')
             res.status(response.status).json(response)

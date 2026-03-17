@@ -103,7 +103,7 @@ export const appointmentService = {
 
                 if (!isBooked) {
                     if (isToday && isPast) {
-                 
+
                     } else {
                         slots.push(slotDate)
                     }
@@ -118,56 +118,52 @@ export const appointmentService = {
         }
     },
     registerAppointment: async (patientId, data) => {
-        validateMissingFields(data, ['departmentId', 'doctorId', 'appointmentDate'])
-        const { departmentId, doctorId, appointmentDate } = data
-        if (!Number.isInteger(Number(departmentId))) {
-            throw new BadrequestException('khoa không hợp lệ')
-        }
+        validateMissingFields(data, ['doctorId', 'appointmentDate'])
+
+        const { doctorId, appointmentDate } = data
+
         if (!Number.isInteger(Number(doctorId))) {
-            throw new BadrequestException('bác sĩ không hợp lệ')
+            throw new BadrequestException('Bác sĩ không hợp lệ')
         }
+
         if (isNaN(new Date(appointmentDate).getTime())) {
             throw new BadrequestException("Ngày giờ khám không hợp lệ")
         }
-        const [deparment, doctor] = await Promise.all([
-            prisma.department.findUnique({
-                where: {
-                    id: Number(departmentId)
-                }
-            }),
-            prisma.user.findUnique({
-                where: {
-                    id: Number(doctorId)
-                },
-                include: {
-                    department: true
-                }
-            })
-        ])
-        if (!deparment) {
-            throw new NotFoundException('Không tìm thấy khoa này')
-        }
+
+        const doctor = await prisma.user.findUnique({
+            where: { id: Number(doctorId) },
+            include: { department: true }
+        })
+
         if (!doctor) {
             throw new NotFoundException('Không tìm thấy bác sĩ này')
         }
-        if (deparment.id !== doctor.department.id) {
-            throw new BadrequestException('Bác sĩ khoa này không cùng khoa chọn')
+
+        if (!doctor.department) {
+            throw new BadrequestException('Bác sĩ chưa được phân khoa')
         }
+
+        const departmentId = doctor.department.id
+
         const appointmentDateTime = new Date(appointmentDate)
         const dayOfWeek = appointmentDateTime.getDay()
         const minutes = appointmentDateTime.getHours() * 60 + appointmentDateTime.getMinutes()
 
+
         const schedule = await prisma.doctorSchedule.findFirst({
             where: {
                 doctorId: Number(doctorId),
-                dayOfWeek: dayOfWeek,
+                dayOfWeek,
                 startTime: { lte: minutes },
                 endTime: { gte: minutes }
             }
         })
+
         if (!schedule) {
-            throw new BadrequestException('Bác sĩ không có làm việc giờ này')
+            throw new BadrequestException('Bác sĩ không làm việc giờ này')
         }
+
+
         const existing = await prisma.appointment.findFirst({
             where: {
                 doctorId: Number(doctorId),
@@ -176,21 +172,22 @@ export const appointmentService = {
         })
 
         if (existing) {
-            throw new BadrequestException('Khung giờ này đã đặt được')
+            throw new BadrequestException('Khung giờ này đã được đặt')
         }
+
         const code = await generateAppointCode()
+
         const appointment = await prisma.appointment.create({
             data: {
-                code: code,
+                code,
                 patientId: Number(patientId),
                 doctorId: Number(doctorId),
-                departmentId: Number(departmentId),
+                departmentId,
                 appointmentDate: appointmentDateTime
             }
         })
-        return {
-            appointment
-        }
+
+        return { appointment }
     },
     getAllAppointments: async (patientId) => {
         const now = new Date
@@ -306,7 +303,7 @@ export const appointmentService = {
         const request = await prisma.appointmentRequest.findMany({
             where: {
                 status: {
-                    in: ['APPROVED', 'REJECTED']
+                    in: ['PENDING','APPROVED', 'REJECTED']
                 },
                 patientId: Number(patientId)
             },
