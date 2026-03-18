@@ -3,9 +3,20 @@ import { appointmentController } from "../../controllers/medicalStaff/appointmen
 
 const router = express.Router()
 
+router.get('/getAllDoctorsByDepartment/:departmentId', appointmentController.getAllDoctorsByDepartment)
+router.get('/getAvailableSlots/:doctorId', appointmentController.getAvailableSlots)
 router.get('/getOverViewAppointment', appointmentController.getOverViewAppointment)
 router.get('/getAllAppointments', appointmentController.getAllAppointments)
 router.get('/getAllRequestAppointments', appointmentController.getAllRequestAppointments)
-router.put('/confirmAppointment', appointmentController.confirmAppointment)
-router.put('/getAllRequestAppointments', appointmentController.cancelAppointment)
+router.post('/confirmAppointment/:appointmentId', appointmentController.confirmAppointment)
+router.post('/cancelAppointment/:appointmentId', appointmentController.cancelAppointment)
+router.post('/changeAppointment/:appointmentId', appointmentController.changeAppointment)
+
+router.post('/changeAppointment/:requestId', appointmentController.changeAppointment)
+router.post('/rejectRequest/:requestId', appointmentController.rejectRequest)
+router.get('/getAllAppointmentConfirm', appointmentController.getAllAppointmentConfirm)
+router.post('/receptionAppointment/:appointmentId', appointmentController.receptionAppointment)
+router.post('/notComeAppointment/:appointmentId', appointmentController.notComeAppointment)
+router.get('/getAllAppointmentReception', appointmentController.getAllAppointmentReception)
+router.post('/createVitalSign', appointmentController.createVitalSign)
 export default router

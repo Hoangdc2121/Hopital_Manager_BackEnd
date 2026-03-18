@@ -68,7 +68,7 @@ Dashboard:
 Tổng quan bênh nhân (GET): http://localhost:7000/api/patient/dashboard/getOverView
 Lấy danh sách lịch gần đây nhất (GET): http://localhost:7000/api/patient/dashboard/getAllAppointments
 Lấy danh sách lịch sử khám bệnh gồm những lịch thành công, hủy và hk đến (GET) : http://localhost:7000/api/patient/dashboard/getHistoryAppointments
-
+Lấy top bác sĩ: http://localhost:7000/api/patient/dashboard/getTopDoctors
 Lịch khám:
 1.Lấy danh sách khoa (GET): http://localhost:7000/api/patient/appointment/getAllDepartmentsSimple
 2.Lấy danh sách bác sĩ thuộc khoa đó (GET): http://localhost:7000/api/patient/appointment/getAllDoctorsByDepartment/:departmentId

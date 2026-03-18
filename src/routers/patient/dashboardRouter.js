@@ -3,8 +3,8 @@ import { dahsboardController } from "../../controllers/patient/dashboardControll
 
 const router = express.Router()
 
-router.get('/getOverView',dahsboardController.getOverView)
-router.get('/getAllAppointments',dahsboardController.getAllAppointments)
-router.get('/getHistoryAppointments',dahsboardController.getHistoryAppointments)
-
+router.get('/getOverView', dahsboardController.getOverView)
+router.get('/getAllAppointments', dahsboardController.getAllAppointments)
+router.get('/getHistoryAppointments', dahsboardController.getHistoryAppointments)
+router.get('/getTopDoctors', dahsboardController.getTopDoctors)
 export default router

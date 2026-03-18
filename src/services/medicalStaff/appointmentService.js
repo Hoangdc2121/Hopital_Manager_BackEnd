@@ -284,7 +284,7 @@ export const appointmentService = {
             data: {
                 userId: appointment.patient.id,
                 title: "Lịch khám đã bị hủy",
-                message: `Lịch khám lúc ${timeStr} ngày ${dateStr} với bác sĩ ${appointment.doctor.fullName} (${appointment.department.name}) đã bị hủy.${reason ? ` Lý do: ${reason}` : ''}`
+                content: `Lịch khám lúc ${timeStr} ngày ${dateStr} với bác sĩ ${appointment.doctor.fullName} (${appointment.department.name}) đã bị hủy.${reason ? ` Lý do: ${reason}` : ''}`
             }
         })
     },
@@ -410,6 +410,11 @@ export const appointmentService = {
                     reviewedAt: new Date()
                 }
             })
+        await notificationService.sendNotification({
+            userId: request.patientId,
+            title: "Yêu cầu đã được chấp nhận",
+            content: "Yêu cầu của bạn đã được xử lý thành công"
+        })
     },
     rejectRequest: async (requestId, medicalId) => {
         const request = await prisma.appointmentRequest.findUnique({
@@ -427,6 +432,11 @@ export const appointmentService = {
                 reviewedById: medicalId,
                 reviewedAt: new Date()
             }
+        })
+        await notificationService.sendNotification({
+            userId: request.patientId,
+            title: "Yêu cầu đã bị từ chối",
+            content: "Yêu cầu của bạn xử lý thất bại"
         })
     },
     getAllAppointmentConfirm: async (page) => {
@@ -484,24 +494,6 @@ export const appointmentService = {
                 totalPages: Math.ceil(totalAppointments / limit)
             }
         }
-    },
-    receptionAppointment: async (appointmentId) => {
-        const appointment = await prisma.appointment.findUnique({
-            where: {
-                id: Number(appointmentId)
-            }
-        })
-        if (!appointment) {
-            throw new NotFoundException('Không tìm lấy lịch này')
-        }
-        await prisma.appointment.update({
-            where: {
-                id: Number(appointmentId)
-            },
-            data: {
-                status: 'WAITING'
-            }
-        })
     },
     receptionAppointment: async (appointmentId) => {
         const appointment = await prisma.appointment.findUnique({
@@ -605,33 +597,33 @@ export const appointmentService = {
         if (!appointment) {
             throw new NotFoundException('Không tìm lấy lịch này')
         }
-        if(typeof bloodPressure !== 'string' || bloodPressure.trim() === '') {
+        if (typeof bloodPressure !== 'string' || bloodPressure.trim() === '') {
             throw new BadrequestException('Huyết áp không hợp lệ')
         }
 
-        if(!Number.isInteger(Number(heartRate))) {
+        if (!Number.isInteger(Number(heartRate))) {
             throw new BadrequestException('Nhịp tim không hợp lệ')
         }
-         if(!Number(temperature)) {
+        if (!Number(temperature)) {
             throw new BadrequestException('nhiệt độ không hợp lệ')
         }
-        if(!Number.isInteger(Number(spo2))) {
+        if (!Number.isInteger(Number(spo2))) {
             throw new BadrequestException('spo2 không hợp lệ')
         }
-          if(!Number.isInteger(Number(respiratoryRate))) {
+        if (!Number.isInteger(Number(respiratoryRate))) {
             throw new BadrequestException('Nhịp thở không hợp lệ')
         }
-         if(!Number(height)) {
+        if (!Number(height)) {
             throw new BadrequestException('chiều cao không hợp lệ')
         }
-         if(!Number(weight)) {
+        if (!Number(weight)) {
             throw new BadrequestException('cân nặng không hợp lệ')
         }
 
-        if(appointment.status !== 'WAITING') {
+        if (appointment.status !== 'WAITING') {
             throw new BadrequestException('Lịch đã khám xong hoặc chưa được y tế tiếp nhận')
         }
-       
+
 
         const exist = await prisma.vitalSign.findFirst({
             where: { appointmentId: Number(appointmentId) }
@@ -641,17 +633,17 @@ export const appointmentService = {
             throw new BadrequestException('Sinh hiệu đã được nhập')
         }
         const vital = await prisma.vitalSign.create({
-            data : {
-                appointmentId : Number(appointmentId),
-                recordedById : medicalId,
-                bloodPressure : bloodPressure,
-                heartRate : Number(heartRate),
-                temperature : Number(temperature),
-                spo2 : Number(spo2),
-                respiratoryRate : Number(respiratoryRate),
-                height : Number(height),
-                weight : Number(weight),
-                note : note ? note.trim() : null
+            data: {
+                appointmentId: Number(appointmentId),
+                recordedById: medicalId,
+                bloodPressure: bloodPressure,
+                heartRate: Number(heartRate),
+                temperature: Number(temperature),
+                spo2: Number(spo2),
+                respiratoryRate: Number(respiratoryRate),
+                height: Number(height),
+                weight: Number(weight),
+                note: note ? note.trim() : null
             }
         })
         return {

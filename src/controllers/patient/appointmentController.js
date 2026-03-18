@@ -19,7 +19,7 @@ export const appointmentController = {
             const response = responseSuccess(data, "Lấy danh sách bác sĩ theo khoa thành công")
             res.status(response.status).json(response);
         } catch (err) {
-            console.error("Lấy danh sách bác sĩ theo khoa khoa thất bại", err)
+            console.error("Lấy danh sách bác sĩ theo khoa thất bại", err)
             next(err)
         }
     },
@@ -81,7 +81,7 @@ export const appointmentController = {
             next(err)
         }
     },
-     getHistoryRequestAppointment: async (req, res, next) => {
+    getHistoryRequestAppointment: async (req, res, next) => {
         try {
             const patientId = req.user.id
             const data = await appointmentService.getHistoryRequestAppointment(patientId)
@@ -92,5 +92,5 @@ export const appointmentController = {
             next(err)
         }
     },
-    
+
 }

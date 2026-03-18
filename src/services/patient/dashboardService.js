@@ -116,5 +116,28 @@ export const dashboardService = {
         return {
             appointments
         }
-    }
+    },
+    getTopDoctors: async () => {
+        const limit = 3
+        const doctors = await prisma.user.findMany({
+            where: {
+                role: 'DOCTOR'
+            },
+            take: limit,
+            select: {
+                id: true,
+                fullName: true,
+                avatar: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+        return {
+            doctors
+        }
+    },
 }

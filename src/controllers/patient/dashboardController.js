@@ -35,4 +35,14 @@ export const dahsboardController = {
             next(err)
         }
     },
+    getTopDoctors : async (req,res,next) => {
+        try {
+            const data = await dashboardService.getTopDoctors()
+            const response = responseSuccess(data,'Lấy top bác sĩ nổi bật thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Lấy top bác sĩ nổi bật thất bại',err)
+            next(err)
+        }
+    }
 }
