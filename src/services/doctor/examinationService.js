@@ -167,21 +167,126 @@ export const examinationService = {
             medicalRecord
         }
     },
-    createPrescription: async (doctorId, data) => {
-        const { medicalRecordId, medicines } = data
-        if (!medicalRecordId || !Array.isArray(medicines) || medicines.length === 0) {
-            throw new BadrequestException("Thiếu thông tin kê thuốc")
+   createPrescriptionAndInvoice: async (data) => {
+    const { medicalRecordId, appointmentId, medicines } = data
+
+    if (!medicalRecordId || !appointmentId || !Array.isArray(medicines) || medicines.length === 0) {
+        throw new BadrequestException("Thiếu thông tin kê thuốc")
+    }
+
+    return await prisma.$transaction(async (tx) => {
+
+   
+        const appointment = await tx.appointment.findUnique({
+            where: { id: Number(appointmentId) }
+        })
+
+        if (!appointment) {
+            throw new NotFoundException("Không tìm thấy lịch khám")
         }
-        return await prisma.$transaction( async (tx) => {
-            const prescription = await tx.prescription.create({
-                data : {
-                    medicalRecordId : Number(medicalRecordId)
+
+        const patientId = appointment.patientId
+
+    
+        const prescription = await tx.prescription.create({
+            data: { medicalRecordId: Number(medicalRecordId) }
+        })
+
+        let totalAmount = 0
+
+      
+        const invoice = await tx.invoice.create({
+            data: {
+                appointmentId: Number(appointmentId),
+                totalAmount: 0,
+                payments: {
+                    create: {
+                        userId: patientId,
+                        amount: 0,
+                        method: "CASH", 
+                        status: "PENDING"
+                    }
                 }
-            })
-            for (const m of medicines) {
-                
             }
         })
 
+     
+        for (const m of medicines) {
+            const medicine = await tx.medicine.findUnique({
+                where: { id: Number(m.medicineId) }
+            })
+
+            if (!medicine) {
+                throw new NotFoundException("Không tìm thấy thuốc")
+            }
+
+            if (medicine.stock < m.quantity) {
+                throw new BadrequestException(`Thuốc ${medicine.name} không đủ số lượng`)
+            }
+
+            const itemTotal = medicine.price * m.quantity
+            totalAmount += itemTotal
+
+    
+            await tx.prescriptionItem.create({
+                data: {
+                    prescriptionId: prescription.id,
+                    medicineId: Number(m.medicineId),
+                    dosage: m.dosage,
+                    days: m.days,
+                    quantity: m.quantity,
+                    price: medicine.price
+                }
+            })
+
+        
+            await tx.invoiceItem.create({
+                data: {
+                    invoiceId: invoice.id,
+                    type: "MEDICINE",
+                    name: medicine.name,
+                    price: medicine.price,
+                    quantity: m.quantity
+                }
+            })
+
+      
+            await tx.medicine.update({
+                where: { id: Number(m.medicineId) },
+                data: {
+                    stock: { decrement: m.quantity }
+                }
+            })
+        }
+
+    
+        await tx.invoice.update({
+            where: { id: invoice.id },
+            data: { totalAmount }
+        })
+
+     
+        await tx.payment.updateMany({
+            where: { invoiceId: invoice.id },
+            data: { amount: totalAmount }
+        })
+
+        await tx.appointment.update({
+            where: { id: Number(appointmentId) },
+            data: { status: "COMPLETED" }
+        })
+
+        return { prescription, invoice }
+    })
+},
+    getAllMedicine : async () => {
+        const medicine = await prisma.medicine.findMany({
+            where : {
+                isActive : true
+            },
+        })
+        return {
+            medicine
+        }
     }
 }
