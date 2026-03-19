@@ -1,4 +1,4 @@
-import prisma from "../../common/prisma/initPrisma"
+import prisma from "../../common/prisma/initPrisma.js"
 
 export const dashboardService = {
     getAppointmentComming: async (doctorId) => {

@@ -217,7 +217,8 @@ export const appointmentService = {
                     select: {
                         id: true,
                         fullName: true,
-                        role: true
+                        role: true,
+                        avatar : true
                     }
                 }
             }
