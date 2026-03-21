@@ -36,31 +36,30 @@ export const dashboardService = {
       cancelRate
     }
   },
-  getRevenueAndAppointmentsChart: async (from, to) => {
+  getRevenueAndAppointmentsChart: async () => {
 
-    const dateFilter = from && to ? {
-      gte: new Date(from),
-      lte: new Date(to)
-    } : undefined
+    const year = new Date().getFullYear()
 
     const payments = await prisma.payment.findMany({
       where: {
         status: "SUCCESS",
-        ...(dateFilter ? { paidAt: dateFilter } : {})
+        paidAt: {
+          gte: new Date(`${year}-01-01`),
+          lte: new Date(`${year}-12-31`)
+        }
       },
-      select: {
-        amount: true,
-        paidAt: true
-      }
+      select: { amount: true, paidAt: true }
     })
 
     const appointments = await prisma.appointment.findMany({
       where: {
-        ...(dateFilter ? { appointmentDate: dateFilter } : {})
+        status: "COMPLETED",
+        appointmentDate: {
+          gte: new Date(`${year}-01-01`),
+          lte: new Date(`${year}-12-31`)
+        }
       },
-      select: {
-        appointmentDate: true
-      }
+      select: { appointmentDate: true }
     })
 
     const months = Array.from({ length: 12 }, (_, i) => ({
@@ -70,20 +69,16 @@ export const dashboardService = {
     }))
 
     payments.forEach(p => {
-      if (p.paidAt) {
-        const m = new Date(p.paidAt).getMonth()
-        months[m].revenue += p.amount
-      }
+      const m = new Date(p.paidAt).getMonth()
+      months[m].revenue += p.amount
     })
-
 
     appointments.forEach(a => {
       const m = new Date(a.appointmentDate).getMonth()
       months[m].appointments += 1
     })
 
-
-    return months.filter(m => m.revenue > 0 || m.appointments > 0)
+    return months
   },
   getAppointmentByDepartment: async () => {
 
@@ -237,6 +232,40 @@ export const dashboardService = {
         total: totalAppointments,
         totalPages: Math.ceil(totalAppointments / limit)
       }
+    }
+  },
+  getOverViewFull: async () => {
+    const [totalRevenue, totalPatients, totalDoctors, totalMedicalStaffs, totalDepartments, totalMediciens, totalAppointments] = await Promise.all([
+      prisma.invoice.aggregate({
+        _sum: { totalAmount: true }
+      }),
+      prisma.user.count({
+        where : {
+          role : 'PATIENT'
+        }
+      }),
+      prisma.user.count({
+        where : {
+          role : 'DOCTOR'
+        }
+      }),
+      prisma.user.count({
+        where : {
+          role : 'MEDICAL_STAFF'
+        }
+      }),
+      prisma.department.count(),
+      prisma.medicine.count(),
+      prisma.appointment.count(),
+    ])
+    return {
+      totalRevenue,
+      totalDoctors,
+      totalPatients,
+      totalMedicalStaffs,
+      totalDepartments,
+      totalAppointments,
+      totalMediciens
     }
   }
 }

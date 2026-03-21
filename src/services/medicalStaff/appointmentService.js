@@ -166,6 +166,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
+                            avatar : true,
                             phoneNumber: true,
                             role: true
                         }
@@ -174,6 +175,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
+                            avatar : true,
                             role: true,
                             department: {
                                 select: {
@@ -461,6 +463,7 @@ export const appointmentService = {
                             id: true,
                             fullName: true,
                             phoneNumber: true,
+                            avatar : true,
                             role: true
                         }
                     },
@@ -468,6 +471,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
+                            avatar : true,
                             role: true,
                             department: {
                                 select: {
@@ -552,6 +556,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
+                            avatar : true,
                             phoneNumber: true,
                             role: true
                         }
@@ -560,6 +565,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
+                            avatar : true,
                             role: true,
                             department: {
                                 select: {
@@ -632,7 +638,7 @@ export const appointmentService = {
         if (exist) {
             throw new BadrequestException('Sinh hiệu đã được nhập')
         }
-        const vital = await prisma.vitalSign.create({
+        const vitalSign = await prisma.vitalSign.create({
             data: {
                 appointmentId: Number(appointmentId),
                 recordedById: medicalId,
@@ -647,7 +653,7 @@ export const appointmentService = {
             }
         })
         return {
-            vital
+            vitalSign
         }
     }
 }

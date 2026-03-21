@@ -1,9 +1,9 @@
-import { BadrequestException, NotFoundException } from "../../common/helpers/exception.helper"
-import prisma from "../../common/prisma/initPrisma"
-import validateMissingFields from "../../utils/validateFields"
+import { BadrequestException, NotFoundException } from "../../common/helpers/exception.helper.js"
+import prisma from "../../common/prisma/initPrisma.js"
+import validateMissingFields from "../../utils/validateFields.js"
 
 export const examinationService = {
-    examinationPatient: async (appointmentId, doctorId) => {
+    examinationPatient: async (doctorId, appointmentId) => {
         const appointment = await prisma.appointment.findFirst({
             where: {
                 id: Number(appointmentId),
@@ -13,7 +13,7 @@ export const examinationService = {
         if (!appointment) {
             throw new NotFoundException('Không tìm thấy lịch này')
         }
-        await prisma.appointment.update({
+        const examinationPatient = await prisma.appointment.update({
             where: {
                 id: Number(appointmentId),
                 doctorId: doctorId
@@ -22,6 +22,9 @@ export const examinationService = {
                 status: 'IN_PROGRESS'
             }
         })
+        return {
+            examinationPatient
+        }
 
     },
     getOverviewExamination: async (doctorId) => {
@@ -66,11 +69,24 @@ export const examinationService = {
             throw new NotFoundException('Không tìm thấy lịch này')
         }
 
-        const today = new Date()
-        const startDate = new Date(today)
-        startDate.setHours(schedule.startTime, 0, 0, 0)
-        const endDate = new Date(today)
-        endDate.setHours(schedule.endTime, 0, 0, 0)
+
+
+        const now = new Date()
+
+        const startOfDayVN = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            0, 0, 0, 0
+        )
+
+
+        const startDateVN = new Date(startOfDayVN.getTime() + schedule.startTime * 60 * 1000)
+        const endDateVN = new Date(startOfDayVN.getTime() + schedule.endTime * 60 * 1000)
+
+
+        const startDate = new Date(startDateVN.toISOString())
+        const endDate = new Date(endDateVN.toISOString())
 
         const [appointments, totalAppointments] = await Promise.all([
             prisma.appointment.findMany({
@@ -141,9 +157,17 @@ export const examinationService = {
         }
     },
     createMedicalRecord: async (doctorId, data) => {
-        validateMissingFields(data, ['symptoms', 'diagnosis', 'conclusion'])
+        validateMissingFields(data, ['appointmentId', 'symptoms', 'diagnosis', 'conclusion'])
         const { appointmentId, symptoms, diagnosis, conclusion } = data
 
+        const appointment = await prisma.appointment.findUnique({
+            where: {
+                id: Number(appointmentId)
+            }
+        })
+        if (!appointment) {
+            throw new NotFoundException('Không tìm thấy lịch khám này')
+        }
         if (typeof symptoms !== 'string' || symptoms.trim() === '') {
             throw new BadrequestException('Triệu chứng không hợp lệ')
         }
@@ -156,8 +180,9 @@ export const examinationService = {
 
         const medicalRecord = await prisma.medicalRecord.create({
             data: {
-                appointmentId: appointmentId,
+                appointmentId: Number(appointmentId),
                 doctorId: doctorId,
+                patientId: appointment.patientId,
                 symptoms: symptoms.trim(),
                 diagnosis: diagnosis.trim(),
                 conclusion: conclusion.trim()
@@ -167,126 +192,116 @@ export const examinationService = {
             medicalRecord
         }
     },
-   createPrescriptionAndInvoice: async (data) => {
-    const { medicalRecordId, appointmentId, medicines } = data
+    createPrescriptionAndInvoice: async (data) => {
+        const { medicalRecordId, medicines, note, advice, followUpAt } = data
 
-    if (!medicalRecordId || !appointmentId || !Array.isArray(medicines) || medicines.length === 0) {
-        throw new BadrequestException("Thiếu thông tin kê thuốc")
-    }
-
-    return await prisma.$transaction(async (tx) => {
-
-   
-        const appointment = await tx.appointment.findUnique({
-            where: { id: Number(appointmentId) }
-        })
-
-        if (!appointment) {
-            throw new NotFoundException("Không tìm thấy lịch khám")
+        if (!medicalRecordId || !Array.isArray(medicines) || medicines.length === 0) {
+            throw new BadrequestException("Thiếu thông tin kê thuốc")
         }
 
-        const patientId = appointment.patientId
 
-    
-        const prescription = await tx.prescription.create({
-            data: { medicalRecordId: Number(medicalRecordId) }
-        })
+        return await prisma.$transaction(async (tx) => {
 
-        let totalAmount = 0
 
-      
-        const invoice = await tx.invoice.create({
-            data: {
-                appointmentId: Number(appointmentId),
-                totalAmount: 0,
-                payments: {
-                    create: {
-                        userId: patientId,
-                        amount: 0,
-                        method: "CASH", 
-                        status: "PENDING"
+            const medicalRecord = await tx.medicalRecord.findUnique({
+                where: { id: Number(medicalRecordId) },
+                include: {
+                    appointment: {
+                        include: { invoice: true }
                     }
                 }
-            }
-        })
-
-     
-        for (const m of medicines) {
-            const medicine = await tx.medicine.findUnique({
-                where: { id: Number(m.medicineId) }
             })
 
-            if (!medicine) {
-                throw new NotFoundException("Không tìm thấy thuốc")
+            if (!medicalRecord) {
+                throw new NotFoundException("Không tìm thấy hồ sơ bệnh án")
             }
 
-            if (medicine.stock < m.quantity) {
-                throw new BadrequestException(`Thuốc ${medicine.name} không đủ số lượng`)
+            const appointment = medicalRecord.appointment
+
+            if (appointment.invoice) {
+                throw new BadrequestException("Lịch khám đã có hóa đơn")
             }
 
-            const itemTotal = medicine.price * m.quantity
-            totalAmount += itemTotal
 
-    
-            await tx.prescriptionItem.create({
+            const prescription = await tx.prescription.create({
                 data: {
-                    prescriptionId: prescription.id,
-                    medicineId: Number(m.medicineId),
-                    dosage: m.dosage,
-                    days: m.days,
-                    quantity: m.quantity,
-                    price: medicine.price
+                    medicalRecordId: Number(medicalRecordId),
+                    note: note ? note.trim() : "",
+                    advice: advice ? note.trim() : "",
+                    followUpAt: new Date(followUpAt)
                 }
             })
 
-        
-            await tx.invoiceItem.create({
+            let totalAmount = 0
+
+            const invoice = await tx.invoice.create({
                 data: {
-                    invoiceId: invoice.id,
-                    type: "MEDICINE",
-                    name: medicine.name,
-                    price: medicine.price,
-                    quantity: m.quantity
+                    appointmentId: medicalRecord.appointmentId,
+                    totalAmount: 0,
+                    status: "UNPAID"
                 }
             })
 
-      
-            await tx.medicine.update({
-                where: { id: Number(m.medicineId) },
-                data: {
-                    stock: { decrement: m.quantity }
+
+            for (const m of medicines) {
+                const medicine = await tx.medicine.findUnique({
+                    where: { id: Number(m.medicineId) }
+                })
+
+                if (!medicine) {
+                    throw new NotFoundException("Không tìm thấy thuốc")
                 }
+
+                if (medicine.stock < m.quantity) {
+                    throw new BadrequestException(`Thuốc ${medicine.name} không đủ số lượng`)
+                }
+
+                const itemTotal = medicine.price * m.quantity
+                totalAmount += itemTotal
+
+
+                await tx.prescriptionItem.create({
+                    data: {
+                        prescriptionId: prescription.id,
+                        medicineId: Number(m.medicineId),
+                        dosage: m.dosage,
+                        days: m.days,
+                        quantity: m.quantity,
+                        price: medicine.price
+                    }
+                })
+
+
+                await tx.invoiceItem.create({
+                    data: {
+                        invoiceId: invoice.id,
+                        type: "MEDICINE",
+                        name: medicine.name,
+                        price: medicine.price,
+                        quantity: m.quantity
+                    }
+                })
+
+
+                await tx.medicine.update({
+                    where: { id: Number(m.medicineId) },
+                    data: { stock: { decrement: m.quantity } }
+                })
+            }
+
+
+            await tx.invoice.update({
+                where: { id: invoice.id },
+                data: { totalAmount }
             })
-        }
 
-    
-        await tx.invoice.update({
-            where: { id: invoice.id },
-            data: { totalAmount }
-        })
 
-     
-        await tx.payment.updateMany({
-            where: { invoiceId: invoice.id },
-            data: { amount: totalAmount }
-        })
+            await tx.appointment.update({
+                where: { id:medicalRecord.appointmentId },
+                data: { status: "COMPLETED" }
+            })
 
-        await tx.appointment.update({
-            where: { id: Number(appointmentId) },
-            data: { status: "COMPLETED" }
+            return { prescription }
         })
-
-        return { prescription, invoice }
-    })
-},
-    getAllMedicine : async () => {
-        const medicine = await prisma.medicine.findMany({
-            where : {
-                isActive : true
-            },
-        })
-        return {
-            medicine
-        }
-    }
+    },
 }

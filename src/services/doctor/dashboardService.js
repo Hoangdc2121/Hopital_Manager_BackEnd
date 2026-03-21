@@ -2,11 +2,14 @@ import prisma from "../../common/prisma/initPrisma.js"
 
 export const dashboardService = {
     getAppointmentComming: async (doctorId) => {
-        // const now = new Date()
+        const now = new Date()
         const appointment = await prisma.appointment.findFirst({
             where: {
                 status: 'WAITING',
                 doctorId: doctorId,
+                appointmentDate : {
+                    gt : now
+                }
             },
             orderBy: {
                 appointmentDate: 'asc'
