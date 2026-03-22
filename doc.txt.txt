@@ -36,7 +36,7 @@ Cập nhật trạng thái thuộc toggle : http://localhost:7000/api/admin/medi
 Lấy danh sách thuốc có phân trạng và lọc tên đơn vị giá, số lượng : http://localhost:7000/api/admin/medicine/getAllMedicines?search=300
 
 
-Tổng quan admin:
+Tổng quan admin:fff
 
 Lấy tổng quan admin: http://localhost:7000/api/admin/dashboard/getOverView
 Lấy tổng doanh thua và tổng lượt tháng theo biểu đồ cột đôi admin : http://localhost:7000/api/admin/dashboard/getRevenueAndAppointmentsChart
