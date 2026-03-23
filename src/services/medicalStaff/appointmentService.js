@@ -166,7 +166,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
-                            avatar : true,
+                            avatar: true,
                             phoneNumber: true,
                             role: true
                         }
@@ -175,7 +175,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
-                            avatar : true,
+                            avatar: true,
                             role: true,
                             department: {
                                 select: {
@@ -379,6 +379,11 @@ export const appointmentService = {
         const request = await prisma.appointmentRequest.findUnique({
             where: {
                 id: Number(requestId)
+            },
+            include: {
+                newDoctor: true,
+                oldDoctor: true,
+                
             }
         })
         if (!request) {
@@ -412,16 +417,58 @@ export const appointmentService = {
                     reviewedAt: new Date()
                 }
             })
-        await notificationService.sendNotification({
-            userId: request.patientId,
-            title: "Yêu cầu đã được chấp nhận",
-            content: "Yêu cầu của bạn đã được xử lý thành công"
+
+        const formatVNDateTime = (isoString) => {
+            const d = new Date(isoString)
+            return d.toLocaleString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour12: false,
+                timeZone: "Asia/Ho_Chi_Minh"
+            })
+        }
+        let title = ""
+        let content = ""
+
+        if (request.type === 'CANCEL') {
+            title = "Yêu cầu hủy lịch của bạn đã được chấp nhận"
+            content = `Lịch hẹn với BS. ${request.oldDoctor.fullName} vào ${formatVNDateTime(request.oldDate)} đã được hủy thành công.`
+        }
+        if (request.type === 'CHANGE_TIME') {
+            title = "Yêu cầu dời lịch hẹn thành công"
+            content = `Lịch hẹn với BS. ${request.oldDoctor.fullName} đã được dời: 
+              Từ : ${formatVNDateTime(request.oldDate)}  
+              Sang : ${formatVNDateTime(request.newDate)}  
+              `
+        }
+        if (request.type === 'CHANGE_DOCTOR') {
+            title = "Yêu cầu dời bác sĩ thành công"
+            content = `Lịch hẹn với BS.${request.oldDate.fullName} đã được dời
+              Sang : BS.${request.newDoctor.fullName}
+              Thời gian:
+              Từ : ${formatVNDateTime(request.oldDate)}  
+              Sang : ${request.newDate ? formatVNDateTime(request.newDate) : formatVNDateTime(request.oldDate)}  
+              `
+        }
+        await prisma.notification.create({
+            data: {
+                userId: request.patientId,
+                title,
+                content,
+            }
         })
     },
     rejectRequest: async (requestId, medicalId) => {
         const request = await prisma.appointmentRequest.findUnique({
             where: {
                 id: Number(requestId)
+            },
+            include : {
+                oldDoctor : true,
+                newDoctor : true
             }
         })
         if (!request) {
@@ -435,10 +482,51 @@ export const appointmentService = {
                 reviewedAt: new Date()
             }
         })
-        await notificationService.sendNotification({
-            userId: request.patientId,
-            title: "Yêu cầu đã bị từ chối",
-            content: "Yêu cầu của bạn xử lý thất bại"
+           const formatVNDateTime = (isoString) => {
+            const d = new Date(isoString)
+            return d.toLocaleString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour12: false,
+                timeZone: "Asia/Ho_Chi_Minh"
+            })
+        }
+        let title = ""
+        let content = ""
+
+        if (request.type === 'CANCEL') {
+            title = "Yêu cầu hủy lịch của bạn đã bị từ chối"
+            content = `Lịch hẹn với BS. ${request.oldDoctor.fullName} vào ${formatVNDateTime(request.oldDate)} đã bị từ chối
+            Vui lòng gửi lại yêu cầu vào lần sau
+            .`
+        }
+        if (request.type === 'CHANGE_TIME') {
+            title = "Yêu cầu dời lịch hẹn đã bị từ chối"
+            content = `Lịch hẹn với BS. ${request.oldDoctor.fullName} đã bị từ chối
+            Vui lòng gửi lại yêu cầu vào lần sau: 
+              Từ : ${formatVNDateTime(request.oldDate)}  
+              Sang : ${formatVNDateTime(request.newDate)}  
+              `
+        }
+        if (request.type === 'CHANGE_DOCTOR') {
+            title = "Yêu cầu dời bác sĩ đã bị từ chối"
+            content = `Lịch hẹn với BS.${request.oldDate.fullName} 
+              Sang : BS.${request.newDoctor.fullName}
+              Thời gian:
+              Từ : ${formatVNDateTime(request.oldDate)}  
+              Sang : ${request.newDate ? formatVNDateTime(request.newDate) : formatVNDateTime(request.oldDate)} đã bị từ chối
+            Vui lòng gửi lại yêu cầu vào lần sau
+              `
+        }
+        await prisma.notification.create({
+            data: {
+                userId: request.patientId,
+                title,
+                contentcontent,
+            }
         })
     },
     getAllAppointmentConfirm: async (page) => {
@@ -463,7 +551,7 @@ export const appointmentService = {
                             id: true,
                             fullName: true,
                             phoneNumber: true,
-                            avatar : true,
+                            avatar: true,
                             role: true
                         }
                     },
@@ -471,7 +559,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
-                            avatar : true,
+                            avatar: true,
                             role: true,
                             department: {
                                 select: {
@@ -556,7 +644,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
-                            avatar : true,
+                            avatar: true,
                             phoneNumber: true,
                             role: true
                         }
@@ -565,7 +653,7 @@ export const appointmentService = {
                         select: {
                             id: true,
                             fullName: true,
-                            avatar : true,
+                            avatar: true,
                             role: true,
                             department: {
                                 select: {

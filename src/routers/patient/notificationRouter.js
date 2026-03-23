@@ -4,6 +4,6 @@ import { notificationController } from "../../controllers/patient/notificationCo
 const router = express.Router()
 
 router.get('/getAllNofication',notificationController.getAllNofications)
-router.get('/getInfoNotifications/',notificationController.getInfoNotification)
+router.get('/getInfoNotifications/:notificationId',notificationController.getInfoNotification)
 
 export default router

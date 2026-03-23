@@ -12,7 +12,7 @@ router.post('/confirmAppointment/:appointmentId', appointmentController.confirmA
 router.post('/cancelAppointment/:appointmentId', appointmentController.cancelAppointment)
 router.post('/changeAppointment/:appointmentId', appointmentController.changeAppointment)
 
-router.post('/changeAppointment/:requestId', appointmentController.changeAppointment)
+router.post('/approveRequest/:requestId', appointmentController.approveRequest)
 router.post('/rejectRequest/:requestId', appointmentController.rejectRequest)
 router.get('/getAllAppointmentConfirm', appointmentController.getAllAppointmentConfirm)
 router.post('/receptionAppointment/:appointmentId', appointmentController.receptionAppointment)

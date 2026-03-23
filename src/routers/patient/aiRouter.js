@@ -4,6 +4,6 @@ import { aiController } from "../../controllers/patient/aiController.js";
 
 const router = express.Router()
 
-router.get('/aiMessage',aiController.aiMessage)
+router.post('/aiMessage',aiController.aiMessage)
 
 export default router

@@ -1,94 +1,30 @@
-Đăng nhập: 
-http://localhost:7000/api/auth/login
+role admin:
+Xuất báo cáo thông kê (GET): http://localhost:7000/api/admin/report/exportReportPdf
 
-TK Mk Admin: admin1@gmail.com  admin1 
+role bệnh nhân:
 
-Đăng kí bệnh nhân: 
-http://localhost:7000/api/auth/registerPatient truyền fullName, email, password (có ít nhất 8 kí tự bao gồm 1 chữ cái viết hoa, có số có kí tự đặc biệt), phoneNumber
+Quản lý hồ sơ bệnh án: 
+Lấy danh sách lịch khám đã khám thành công (GET): http://localhost:7000/api/patient/medicalRecord/getAllAppointmentsSucces
+Lấy chi tiết hồ sơ bệnh án của lịch khám (GET): http://localhost:7000/api/patient/medicalRecord/getMedicalRecordByAppointment/:appointmentId
 
-Role Admin:
-Quản lý Khoa
-Tạo khoa: http://localhost:7000/api/admin/department/createDepartment truyền name
-Cập nhật thông tin khoa: http://localhost:7000/api/admin/department/updateDepartmentInfo/:departmentId truyền name
-Cập nhật trạng thái khoa nút toggle : http://localhost:7000/api/admin/department/updateDepartmentStatus/:departmentId
-Lấy danh sách khoa có phân trang và lọc theo tên khoa: http://localhost:7000/api/admin/department/getAllDepartments
-    * Lọc: http://localhost:7000/api/admin/department/getAllDepartments?search=Duoc
+Thông tin bệnh nhân:
+Lấy thông tin bệnh nhân (GET) : http://localhost:7000/api/patient/profile/getInfoPatient
+Cập nhật thông tin bệnh nhân (PUT) : http://localhost:7000/api/patient/profile/getInfoPatient 
+    * fullName, email, phoneNumber, address String
+    * gender theo enum MALE, FEMALE
+    * dateOfBirth Date
+    * avatar
 
-Quản lý nhân sự:
+Đặt lại mật khẩu: http://localhost:7000/api/patient/profile/resetPassword
+    * oldPassword, newPassword, confirmPassword (Mật khẩu mới có ít nhất 8 kí tự bao gồm số chữ cái, chữ cái in hoa, kí hiệu đặt biệt)
 
-Tạo nhân sự: http://localhost:7000/api/admin/account/createAccount truyền fullName, email, password, phoneNumber, role theo role enum  ADMIN, DOCTOR ,MEDICAL_STAFF, PATIENT,
-có thể truyền departmentId khi tạo role bác sĩ, có thể gửi ảnh (avatar)
-    * Lấy api tất cả khoa: http://localhost:7000/api/admin/department/getAllDepartmentsSimple
-Cập nhật thông tin nhân sự:  http://localhost:7000/api/admin/account/updateInfoAccount/:accountId
-    * fullName, email, role, phoneNumber, gender theo enum MALE,FEMALE, dateOfBirth, address, departmentId có thể cập nhật ảnh (avatar)
+Thông báo cho người dùng: 
+Lấy danh sách thông báo (GET): http://localhost:7000/api/patient/notification/getAllNofication
+Lấy chi tiết 1 thông báo (GET) :  http://localhost:7000/api/patient/notification//getInfoNotifications/:notificationId
 
-Cập nhật trạng thái nhân sự nút toggle: http://localhost:7000/api/admin/account/updateAccountStatus/:accountId
-Lấy danh sách nhân sự có phân trang và lọc theo tên và select theo role: http://localhost:7000/api/admin/account/getAllAcounts
+Lịch sử thanh toán (GET): 
+Lấy danh sách hóa đơn đã thanh toán thành công (GET): http://localhost:7000/api/patient/payment/getHistoryPayments
 
-Lấy danh sách bệnh nhân có lọc tên và phân trang và lọc theo giới tính: http://localhost:7000/api/admin/account/getAllPatients
-Lấy tổng quan nhân sự : http://localhost:7000/api/admin/account/getOverViewStaff
-Lấy tổng quan bệnh nhân: http://localhost:7000/api/admin/account/getOverViewPatient
-
-Quản lý thuốc: 
-Tạo thuốc: http://localhost:7000/api/admin/medicine/createMedicine truyền name, unit, price, stock
-Cập nhật thông tin thuốc : http://localhost:7000/api/admin/medicine/updateInfoMedicine/:medicineId truyền name, unit, price, stock
-Cập nhật trạng thái thuộc toggle : http://localhost:7000/api/admin/medicine/updateMedicineStatus/:medicineId
-Lấy danh sách thuốc có phân trạng và lọc tên đơn vị giá, số lượng : http://localhost:7000/api/admin/medicine/getAllMedicines?search=300
-
-
-Tổng quan admin:fff
-
-Lấy tổng quan admin: http://localhost:7000/api/admin/dashboard/getOverView
-Lấy tổng doanh thua và tổng lượt tháng theo biểu đồ cột đôi admin : http://localhost:7000/api/admin/dashboard/getRevenueAndAppointmentsChart
-Phân bố theo khoa: http://localhost:7000/api/admin/dashboard/getAppointmentByDepartment
-Lấy top bác sĩ có ca khám nhiều nhất:  http://localhost:7000/api/admin/dashboard/getTopDoctors
-Thống kê theo khoa:  http://localhost:7000/api/admin/dashboard/getDepartmentStats
-Lấy danh sách lịch hẹn có phân trang:  http://localhost:7000/api/admin/dashboard/getAllAppointments
-
-Quản lý lịch làm việc:
-Lấy danh sách bác sĩ : http://localhost:7000/api/admin/doctor/getAllDoctorsSimple
-Tạo lịch làm việc: http://localhost:7000/api/admin/doctor/createDoctorSchedule 
-    * truyền doctorId, dayOfWeek, startTime, endTime, slotDuration là int hết, startTime endTime lưu bằng phút á
-
-
-Cập nhật lịch làm việc của bác sĩ đó: http://localhost:7000/api/admin/doctor/updateDoctorScheduleInfo/:doctorScheduleId
-    * truyền dayOfWeek, startTime, endTime, slotDuration là int hết
-
-Cập nhật trạng thái ca làm việc của bác sĩ đó nút toggle: http://localhost:7000/api/admin/doctor/updateDoctorScheduleStatus/:doctorScheduleId
-
-Lấy danh sách lịch khám của bác sĩ có phân trang và lọc theo tên: http://localhost:7000/api/admin/doctor/getAllDoctorSchedules
-    * Ví dụ: http://localhost:7000/api/admin/doctor/getAllDoctorSchedules?search=Nguyễn Văn C
-
-Tự chọn có thể thêm xóa cứng:
-Xoá lịch lịch làm bác sĩ: http://localhost:7000/api/admin/doctor/removeDoctorSchedule/:doctorScheduleId
-
-Role bệnh nhân:
-
-Dashboard:
-Tổng quan bênh nhân (GET): http://localhost:7000/api/patient/dashboard/getOverView
-Lấy danh sách lịch gần đây nhất (GET): http://localhost:7000/api/patient/dashboard/getAllAppointments
-Lấy danh sách lịch sử khám bệnh gồm những lịch thành công, hủy và hk đến (GET) : http://localhost:7000/api/patient/dashboard/getHistoryAppointments
-Lấy top bác sĩ: http://localhost:7000/api/patient/dashboard/getTopDoctors
-Lịch khám:
-1.Lấy danh sách khoa (GET): http://localhost:7000/api/patient/appointment/getAllDepartmentsSimple
-2.Lấy danh sách bác sĩ thuộc khoa đó (GET): http://localhost:7000/api/patient/appointment/getAllDoctorsByDepartment/:departmentId
-3.Lấy danh sách ca khám trống của bác sĩ đó và có lọc theo ngày làm của bác sĩ (GET): http://localhost:7000/api/patient/appointment/getAvailableSlots/:doctorId
-    * http://localhost:7000/api/patient/appointment/getAvailableSlots/4?date=2026-03-24
-
-Đăng kí lịch khám (POST): http://localhost:7000/api/patient/appointment/registerAppointment
-    * truyền doctorId int
-    * truyền appointmentDate date lấy từ các slot của api số 3
-
-Lấy danh sách lịch khám đang chờ khám của bệnh nhân: http://localhost:7000/api/patient/appointment/getAllAppointments
-
-Yêu cầu hủy lịch từ người dùng (POST): http://localhost:7000/api/patient/appointment/requestCancelAppointment/:appointmentId
-    * truyền note không truyền cũng được
-
-Yêu cầu dời lịch hoặc đổi bác sĩ: http://localhost:7000/api/patient/appointment/requestAppointment/:appointmentId
-    * truyền note string , newDoctorId int , newDate date, type theo enum  CHANGE_DOCTOR, CHANGE_TIME có thể tách ra 2 cái dùng chung 1 hàm cũng đc
-
-Lấy lịch sử yêu cầu lịch của người dùng : http://localhost:7000/api/patient/appointment/getHistoryRequestAppointment
-
-
-
-
+ChatAI
+Đưa câu hỏi cho AI trả lời (POST) : http://localhost:7000/api/patient/ai/aiMessage 
+    * truyền ask string

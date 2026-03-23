@@ -330,7 +330,27 @@ export const appointmentService = {
                 reviewedBy: {
                     select: {
                         id: true,
-                        fullName: true
+                        fullName: true,
+                        avatar : true,
+                    }
+                },
+                appointment : {
+                    select : {
+                        id : true,
+                        appointmentDate : true,
+                        doctor : {
+                            select : {
+                                id : true,
+                                fullName : true,
+                                avatar : true,
+                                department : {
+                                    select : {
+                                        id : true,
+                                        name : true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 reviewedAt: true
