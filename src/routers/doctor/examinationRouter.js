@@ -8,7 +8,7 @@ router.get('/getOverviewExamination',examinationController.getOverviewExaminatio
 router.get('/getAllExaminationDoctor/:scheduleId',examinationController.getAllExaminationDoctor)
 router.post('/examinationPatient/:appointmentId',examinationController.examinationPatient)
 router.get('/getInfoVitalSign/:appointmentId',examinationController.getInfoVitalSign)
-router.post('/createMedicalRecord',examinationController.createMedicalRecord)
-router.post('/createPrescriptionAndInvoice',examinationController.createPrescriptionAndInvoice)
+router.post('/createMedicalRecord/:appointmentId',examinationController.createMedicalRecord)
+router.post('/createPrescriptionAndInvoice/:medicalRecordId',examinationController.createPrescriptionAndInvoice)
 
 export default router

@@ -31,12 +31,16 @@ export const dashboardService = {
             appointment
         }
     },
-    getHistoryAppointment: async (doctorId) => {
+    getHistoryAppointment: async (doctorId,page) => {
+        const limit = 10
+        const skip = (Number(page) - 1) * limit
         const appointments = await prisma.appointment.findMany({
             where: {
                 doctorId: doctorId,
                 status: 'CONFIRMED'
             },
+            take : limit,
+            skip : skip,
             orderBy: {
                 appointmentDate: 'asc'
             },

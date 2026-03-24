@@ -156,9 +156,9 @@ export const examinationService = {
             vitalSign
         }
     },
-    createMedicalRecord: async (doctorId, data) => {
-        validateMissingFields(data, ['appointmentId', 'symptoms', 'diagnosis', 'conclusion'])
-        const { appointmentId, symptoms, diagnosis, conclusion } = data
+    createMedicalRecord: async (doctorId,appointmentId, data) => {
+        validateMissingFields(data, ['symptoms', 'diagnosis', 'conclusion'])
+        const {symptoms, diagnosis, conclusion } = data
 
         const appointment = await prisma.appointment.findUnique({
             where: {
@@ -192,8 +192,8 @@ export const examinationService = {
             medicalRecord
         }
     },
-    createPrescriptionAndInvoice: async (data) => {
-        const { medicalRecordId, medicines, note, advice, followUpAt } = data
+    createPrescriptionAndInvoice: async (medicalRecordId,data) => {
+        const {medicines, note, advice, followUpAt } = data
 
         if (!medicalRecordId || !Array.isArray(medicines) || medicines.length === 0) {
             throw new BadrequestException("Thiếu thông tin kê thuốc")
@@ -227,7 +227,7 @@ export const examinationService = {
                 data: {
                     medicalRecordId: Number(medicalRecordId),
                     note: note ? note.trim() : "",
-                    advice: advice ? note.trim() : "",
+                    advice: advice ? advice.trim() : "",
                     followUpAt: new Date(followUpAt)
                 }
             })

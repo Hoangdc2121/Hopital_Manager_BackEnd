@@ -2,6 +2,16 @@ import { responseSuccess } from "../../common/helpers/response.helper.js"
 import { appointmentService } from "../../services/medicalStaff/appointmentService.js"
 
 export const appointmentController = {
+    getAllDoctors: async (req,res,next) => {
+        try {
+            const data = await appointmentService.getAllDoctors()
+            const response = responseSuccess(data,'Lấy danh sách bác sĩ thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Lấy danh sách bác sĩ thành công', err)
+            next(err)
+        }
+    },
     getAllDoctorsByDepartment: async (req, res, next) => {
         try {
             const departmentId = req.params.departmentId
@@ -25,9 +35,9 @@ export const appointmentController = {
             next(err)
         }
     },
-    getOverViewAppointment: async (req, res, next) => {
+    getOverView: async (req, res, next) => {
         try {
-            const data = await appointmentService.getOverViewAppointment()
+            const data = await appointmentService.getOverView()
             const response = responseSuccess(data, 'Lấy tổng quan lịch hẹn của y tế thành công')
             res.status(response.status).json(response)
         } catch (err) {
@@ -165,7 +175,8 @@ export const appointmentController = {
     createVitalSign: async (req, res, next) => {
         try {
             const medicalId = req.user.id
-            const data = await appointmentService.createVitalSign(medicalId, req.body)
+            const appointmentId = req.params.appointmentId
+            const data = await appointmentService.createVitalSign(medicalId,appointmentId, req.body)
             const response = responseSuccess(data, 'Tạo phiếu khám bệnh nhân thành công')
             res.status(response.status).json(response)
         } catch (err) {

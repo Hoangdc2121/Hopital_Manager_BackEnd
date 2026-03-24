@@ -38,8 +38,8 @@ export const examinationController = {
             next(err)
         }
     },
-    getInfoVitalSign: async (req,res,next) => {
-       try {
+    getInfoVitalSign: async (req, res, next) => {
+        try {
             const appointmentId = req.params.appointmentId
             const data = await examinationService.getInfoVitalSign(appointmentId)
             const response = responseSuccess(data, 'Lấy thông tin phiếu khám bệnh nhân thành công')
@@ -49,10 +49,11 @@ export const examinationController = {
             next(err)
         }
     },
-    createMedicalRecord: async (req,res,next) => {
-       try {
+    createMedicalRecord: async (req, res, next) => {
+        try {
             const doctorId = req.user.id
-            const data = await examinationService.createMedicalRecord(doctorId,req.body)
+            const appointmentId = req.params.appointmentId
+            const data = await examinationService.createMedicalRecord(doctorId, appointmentId, req.body)
             const response = responseSuccess(data, 'Tạo hồ sơ bệnh án của bệnh nhân thành công')
             res.status(response.status).json(response)
         } catch (err) {
@@ -60,9 +61,10 @@ export const examinationController = {
             next(err)
         }
     },
-    createPrescriptionAndInvoice: async (req,res,next) => {
-       try {
-            const data = await examinationService.createPrescriptionAndInvoice(req.body)
+    createPrescriptionAndInvoice: async (req, res, next) => {
+        try {
+            const medicalRecordId = req.params.medicalRecordId
+            const data = await examinationService.createPrescriptionAndInvoice(medicalRecordId,req.body)
             const response = responseSuccess(data, 'Kê toa thuốc của bệnh nhân thành công')
             res.status(response.status).json(response)
         } catch (err) {

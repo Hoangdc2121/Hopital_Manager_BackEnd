@@ -28,3 +28,93 @@ Lấy danh sách hóa đơn đã thanh toán thành công (GET): http://localhos
 ChatAI
 Đưa câu hỏi cho AI trả lời (POST) : http://localhost:7000/api/patient/ai/aiMessage 
     * truyền ask string
+
+Role y tế: 
+Lấy danh sách bác sĩ theo khoa (GET): http://localhost:7000/api/medicalStaff/appointment/getAllDoctorsByDepartment/:departmentId
+Lấy danh sách lịch trống bác sĩ (GET): http://localhost:7000/api/medicalStaff/appointment/getAvailableSlots/:doctorId
+    * nếu không truyền date thì tự động lấy ngày hiện tại
+    * truyền date thì lấy ngày bác sĩ đó làm
+    * http://localhost:7000/api/medicalStaff/appointment/getAvailableSlots/:doctorId?date=
+
+
+
+Lấy tổng quan y tế (GET): http://localhost:7000/api/medicalStaff/appointment/getOverView
+
+Quản lý yêu cầu:
+Lấy danh sách yêu cầu lịch từ bệnh nhân có phân trang và lọc theo trạng thái (theo PENDING, APPROVED, REJECTED) có phân trang (GET): http://localhost:7000/api/medicalStaff/appointment/getAllRequestAppointments
+    * http://localhost:7000/api/medicalStaff/appointment/getAllRequestAppointments?status=
+Chấp nhận yêu cầu xử lý lịch khám từ bệnh nhân (POST): http://localhost:7000/api/medicalStaff/appointment/approveRequest/:requestId
+Từ chối yêu cầu xử lý lịch khám từ bệnh nhân (POST): http://localhost:7000/api/medicalStaff/appointment/rejectRequest/:requestId
+
+Lịch khám:
+Lấy danh sách lịch khám chỉ lấy các lịch (PENDING,COMPLETED,CANCELLED) có phân trang là lọc theo trạng thái (theo PENDING,COMPLETED,CANCELLED), doctorId (GET) : http://localhost:7000/api/medicalStaff/appointment/getAllAppointments
+    * http://localhost:7000/api/medicalStaff/appointment/getAllAppointments?status= theo các cái này PENDING,COMPLETED,CANCELLED
+    * http://localhost:7000/api/medicalStaff/appointment/getAllAppointments?doctorId=
+    * Lấy danh sách bác sĩ: http://localhost:7000/api/medicalStaff/appointment/getAllDoctors
+
+Xác nhận lịch khám bệnh nhân (POST): http://localhost:7000/api/medicalStaff/appointment/confirmAppointment/:appointmentId
+Hủy lịch khám bệnh nhân (POST) : http://localhost:7000/api/medicalStaff/appointment/cancelAppointment/:appointmentId
+    * truyền reason
+
+Thay đổi lịch khám của bệnh nhân có thể đổi bác sĩ đổi ngày giờ (POST): http://localhost:7000/api/medicalStaff/appointment/changeAppointment/:appointmentId
+    * truyền newDate, newDoctorId, reason
+
+Lịch khám đã xác nhận
+Lấy danh sách lịch khám đã xác nhận có phân trang (GET) : http://localhost:7000/api/medicalStaff/appointment/getAllAppointmentConfirm
+Tiếp nhận bệnh nhân (POST): http://localhost:7000/api/medicalStaff/appointment/receptionAppointment/:appointmentId
+bệnh nhân không đến (POST): http://localhost:7000/api/medicalStaff/appointment/notComeAppointment/:appointmentId
+
+Tiếp nhận:
+Lấy danh sách bệnh nhân đã được tiếp nhận có phân trang (GET): http://localhost:7000/api/medicalStaff/appointment/getAllAppointmentReception
+Tạo phiếu khám (POST): http://localhost:7000/api/medicalStaff/appointment/createVitalSign/:appointmentId
+
+Hóa đơn:
+Lấy danh sách hóa đơn có phân trang và lọc theo trạng thái (UNPAID,PAID) và lọc theo tên người dùng (GET): http://localhost:7000/api/medicalStaff/invoice/getAllInvoices
+    * http://localhost:7000/api/medicalStaff/invoice/getAllInvoices?status=
+    * http://localhost:7000/api/medicalStaff/invoice/getAllInvoices?search=
+
+Xác nhận hóa đơn thanh toán thành công (POST):
+    http://localhost:7000/api/medicalStaff/invoice/ConfirmPaymentInvoice/:invoiceId
+
+
+
+Role Bác sĩ:
+Lấy danh sách thuốc có lọc theo tên thuốc (GET): http://localhost:7000/api/doctor/medicine/getAllMedicine
+Lấy danh sách lịch làm của bác sĩ theo ngày làm (GET) : http://localhost:7000/api/doctor/schedule/getDoctorSchedule
+Dashboard
+lịch bệnh nhân chờ bác sĩ gần nhất (GET): http://localhost:7000/api/doctor/dashboard/getAppointmentComming
+Lấy danh sách khám thành công có phân trang (GET): http://localhost:7000/api/doctor/dashboard/getHistoryAppointment
+
+Ca khám:
+Lấy tổng quan ca khám (GET): http://localhost:7000/api/doctor/examination/getOverviewExamination
+Lấy ca khám theo lịch của bác sĩ (GET): http://localhost:7000/api/doctor/examination/getAllExaminationDoctor/:scheduleId dùng api 2
+Chấp nhận khám cho lịch đó (POST) : http://localhost:7000/api/doctor/examination/examinationPatient/:appointmentId
+Lấy thông tin phiếu khám (GET): http://localhost:7000/api/doctor/examination/getInfoVitalSign/:appointmentId
+Tạo hồ sơ bệnh án (POST): http://localhost:7000/api/doctor/examination//createMedicalRecord/:appointmentId
+    * truyền symptoms, diagnosis, conclusion string
+
+Tạo toa thuốc (POST): http://localhost:7000/api/doctor/examination/createPrescriptionAndInvoice/:medicalRecordId
+    {
+  "note": "Bệnh nhân có tiền sử viêm dạ dày",
+  "advice": "Uống thuốc sau ăn, tránh đồ cay nóng và rượu bia",
+  "followUpAt": "2026-04-05T02:00:00.000Z",
+  "medicines": [
+    {
+      "medicineId": 1,
+      "dosage": "1 viên/lần, ngày 2 lần",
+      "days": 7,
+      "quantity": 14
+    },
+    {
+      "medicineId": 2,
+      "dosage": "1 gói/lần, ngày 3 lần",
+      "days": 5,
+      "quantity": 15
+    }
+  ]
+}
+
+
+
+
+

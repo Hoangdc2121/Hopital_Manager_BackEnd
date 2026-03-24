@@ -2,6 +2,28 @@ import { BadrequestException, NotFoundException } from "../../common/helpers/exc
 import prisma from "../../common/prisma/initPrisma.js"
 
 export const appointmentService = {
+    getAllDoctors : async () => {
+        const doctors = await prisma.user.findMany({
+            where : {
+                isActive : true,
+                role : 'DOCTOR'
+            },
+            select : {
+                id : true,
+                fullName : true,
+                avatar : true,
+                department : {
+                    select : {
+                        id : true,
+                        name : true
+                    }
+                }
+            }
+        })
+        return {
+            doctors
+        }
+    },
     getAllDoctorsByDepartment: async (departmentId) => {
         const department = await prisma.department.findUnique({
             where: {
@@ -101,7 +123,7 @@ export const appointmentService = {
             slots: slots.sort((a, b) => a.getTime() - b.getTime())
         }
     },
-    getOverViewAppointment: async () => {
+    getOverView: async () => {
         const startDay = new Date()
         startDay.setHours(0, 0, 0, 0)
         const endDay = new Date()
@@ -156,12 +178,13 @@ export const appointmentService = {
                 where: whereCondition,
                 take: limit,
                 skip: skip,
-                orderBy: { createdAt: 'desc' },
+                orderBy: { appointmentDate: 'asc' },
                 select: {
                     id: true,
                     code: true,
                     appointmentDate: true,
                     status: true,
+                    reason : true,
                     patient: {
                         select: {
                             id: true,
@@ -213,6 +236,9 @@ export const appointmentService = {
         const [requests, totalRequests] = await Promise.all([
             prisma.appointmentRequest.findMany({
                 where: whereCondition,
+                take : limit,
+                skip : skip,
+                orderBy : {createdAt : 'desc'},
                 include: {
                     appointment: true,
                     oldDoctor: true,
@@ -540,7 +566,7 @@ export const appointmentService = {
                 },
                 take: limit,
                 skip: skip,
-                orderBy: { createdAt: 'desc' },
+                orderBy: { appointmentDate: 'asc' },
                 select: {
                     id: true,
                     code: true,
@@ -681,8 +707,8 @@ export const appointmentService = {
             }
         }
     },
-    createVitalSign: async (medicalId, data) => {
-        const { appointmentId, bloodPressure, heartRate, temperature, spo2, respiratoryRate, height, weight, note } = data
+    createVitalSign: async (medicalId,appointmentId, data) => {
+        const {bloodPressure, heartRate, temperature, spo2, respiratoryRate, height, weight, note } = data
         const appointment = await prisma.appointment.findUnique({
             where: {
                 id: Number(appointmentId)

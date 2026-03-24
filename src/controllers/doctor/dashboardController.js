@@ -16,7 +16,8 @@ export const dashboardController = {
      getHistoryAppointment: async (req,res,next) => {
         try {
             const doctorId = req.user.id
-            const data = await dashboardService.getHistoryAppointment(doctorId)
+            const page = req.query.page || 1
+            const data = await dashboardService.getHistoryAppointment(doctorId,page)
             const response = responseSuccess(data,'Lấy lịch sử khám bệnh nhân đã hoàn thành thành công')
             res.status(response.status).json(response)
         } catch (err) {
