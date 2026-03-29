@@ -239,8 +239,24 @@ export const appointmentService = {
         if (!appointment) {
             throw new NotFoundException('Không tìm thấy lich khám của người dùng này')
         }
-        if (appointment.status === 'COMPLETED' || appointment.status === 'WAITING' || appointment.status === 'IN_PROGRESS') {
-            throw new BadrequestException('Không thể gửi yêu cầu hủy này vì lịch đã được tiếp nhận hoặc đã hoàn thành hoặc đang khám')
+        switch (appointment.status) {
+            case 'COMPLETED':
+                throw new BadrequestException('Lịch đã hoàn thành, không thể hủy')
+
+            case 'WAITING':
+                throw new BadrequestException('Bệnh nhân đã check-in, không thể hủy')
+
+            case 'IN_PROGRESS':
+                throw new BadrequestException('Lịch đang được khám, không thể hủy')
+
+            case 'CANCELLED':
+                throw new BadrequestException('Lịch đã bị hủy trước đó')
+
+            case 'NO_SHOW':
+                throw new BadrequestException('Bạn đã không đến khám, không thể hủy')
+
+            default:
+                break
         }
         const cancelAppointment = await prisma.appointmentRequest.create({
             data: {
@@ -266,8 +282,24 @@ export const appointmentService = {
         if (!appointment) {
             throw new NotFoundException('Không tìm thấy lich khám của người dùng này')
         }
-        if(appointment.status === 'COMPLETED' || appointment.status === 'WAITING' || appointment.status === 'IN_PROGRESS' || appointment.status === 'CANCELED' || appointment.status === 'NO_SHOW') {
-            throw new BadrequestException('Không thể gửi yêu cầu thay đổi này vì lịch đã được tiếp nhận hoặc đã hoàn thành hoặc đang khám hoặc đã bị hủy hoặc bệnh nhân không đến khám')
+        switch (appointment.status) {
+            case 'COMPLETED':
+                throw new BadrequestException('Lịch đã hoàn thành, không thể hủy')
+
+            case 'WAITING':
+                throw new BadrequestException('Bệnh nhân đã check-in, không thể hủy')
+
+            case 'IN_PROGRESS':
+                throw new BadrequestException('Lịch đang được khám, không thể hủy')
+
+            case 'CANCELLED':
+                throw new BadrequestException('Lịch đã bị hủy trước đó')
+
+            case 'NO_SHOW':
+                throw new BadrequestException('Bạn đã không đến khám, không thể hủy')
+
+            default:
+                break
         }
         const existedRequest = await prisma.appointmentRequest.findFirst({
             where: {
