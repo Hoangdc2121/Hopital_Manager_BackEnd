@@ -206,6 +206,7 @@ export const appointmentService = {
                 id: true,
                 code: true,
                 appointmentDate: true,
+                status : true,
                 department: {
                     select: {
                         id: true,
