@@ -506,6 +506,9 @@ export const appointmentService = {
         if (!request) {
             throw new NotFoundException('Không tìm thấy yêu cầu này')
         }
+        if(request.status !== 'PENDING') {
+            throw new BadrequestException('Yêu cầu đã được xử lý trước đó')
+        }
         await prisma.appointmentRequest.update({
             where: { id: request.id },
             data: {
