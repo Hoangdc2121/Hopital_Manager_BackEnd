@@ -155,7 +155,7 @@ export const appointmentService = {
                 doctorId: Number(doctorId),
                 dayOfWeek,
                 startTime: { lte: minutes },
-                endTime: { gte: minutes }
+                endTime: { gte: minutes },
             }
         })
 
@@ -167,7 +167,10 @@ export const appointmentService = {
         const existing = await prisma.appointment.findFirst({
             where: {
                 doctorId: Number(doctorId),
-                appointmentDate: appointmentDateTime
+                appointmentDate: appointmentDateTime,
+                NOT : {
+                    status : 'CANCELLED'
+                }
             }
         })
 
