@@ -206,7 +206,7 @@ export const appointmentService = {
                 id: true,
                 code: true,
                 appointmentDate: true,
-                status : true,
+                status: true,
                 department: {
                     select: {
                         id: true,
@@ -218,7 +218,7 @@ export const appointmentService = {
                         id: true,
                         fullName: true,
                         role: true,
-                        avatar : true
+                        avatar: true
                     }
                 }
             }
@@ -238,6 +238,9 @@ export const appointmentService = {
         })
         if (!appointment) {
             throw new NotFoundException('Không tìm thấy lich khám của người dùng này')
+        }
+        if (appointment.status === 'COMPLETED' || appointment.status === 'WAITING' || appointment.status === 'IN_PROGRESS') {
+            throw new BadrequestException('Không thể gửi yêu cầu hủy này vì lịch đã được tiếp nhận hoặc đã hoàn thành hoặc đang khám')
         }
         const cancelAppointment = await prisma.appointmentRequest.create({
             data: {
@@ -263,8 +266,8 @@ export const appointmentService = {
         if (!appointment) {
             throw new NotFoundException('Không tìm thấy lich khám của người dùng này')
         }
-        if (["COMPLETED", "CANCELLED", "NO_SHOW"].includes(appointment.status)) {
-            throw new BadrequestException("Không thể gửi yêu cầu thay đổi lịch này")
+        if(appointment.status === 'COMPLETED' || appointment.status === 'WAITING' || appointment.status === 'IN_PROGRESS' || appointment.status === 'CANCELED' || appointment.status === 'NO_SHOW') {
+            throw new BadrequestException('Không thể gửi yêu cầu thay đổi này vì lịch đã được tiếp nhận hoặc đã hoàn thành hoặc đang khám hoặc đã bị hủy hoặc bệnh nhân không đến khám')
         }
         const existedRequest = await prisma.appointmentRequest.findFirst({
             where: {
@@ -304,7 +307,7 @@ export const appointmentService = {
         const request = await prisma.appointmentRequest.findMany({
             where: {
                 status: {
-                    in: ['PENDING','APPROVED', 'REJECTED']
+                    in: ['PENDING', 'APPROVED', 'REJECTED']
                 },
                 patientId: Number(patientId)
             },
@@ -331,22 +334,22 @@ export const appointmentService = {
                     select: {
                         id: true,
                         fullName: true,
-                        avatar : true,
+                        avatar: true,
                     }
                 },
-                appointment : {
-                    select : {
-                        id : true,
-                        appointmentDate : true,
-                        doctor : {
-                            select : {
-                                id : true,
-                                fullName : true,
-                                avatar : true,
-                                department : {
-                                    select : {
-                                        id : true,
-                                        name : true
+                appointment: {
+                    select: {
+                        id: true,
+                        appointmentDate: true,
+                        doctor: {
+                            select: {
+                                id: true,
+                                fullName: true,
+                                avatar: true,
+                                department: {
+                                    select: {
+                                        id: true,
+                                        name: true
                                     }
                                 }
                             }

@@ -446,8 +446,8 @@ export const appointmentService = {
                 }
             })
         ])
-        if(request.appointment.status === 'COMPLETED' || request.appointment.status === 'WAITING' || request.appointment.status === 'IN_PROGRESS'){
-            throw new BadrequestException('Không thể duyệt yêu cầu này vì lịch đã được tiếp nhận hoặc đã hoàn thành')
+        if(request.status !== 'PENDING') {
+            throw new BadrequestException('Yêu cầu đã được xử lý trước đó')
         }
 
         const formatVNDateTime = (isoString) => {
