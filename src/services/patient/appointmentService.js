@@ -168,11 +168,10 @@ export const appointmentService = {
             where: {
                 doctorId: Number(doctorId),
                 appointmentDate: appointmentDateTime,
-                NOT : {
-                    status : 'CANCELLED'
+                status: {
+                    notIn : ['NO_SHOW','CANCELLED']
                 }
-            }
-        })
+        }})
 
         if (existing) {
             throw new BadrequestException('Khung giờ này đã được đặt')
