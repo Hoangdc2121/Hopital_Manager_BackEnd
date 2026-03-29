@@ -2,20 +2,20 @@ import { BadrequestException, NotFoundException } from "../../common/helpers/exc
 import prisma from "../../common/prisma/initPrisma.js"
 
 export const appointmentService = {
-    getAllDoctors : async () => {
+    getAllDoctors: async () => {
         const doctors = await prisma.user.findMany({
-            where : {
-                isActive : true,
-                role : 'DOCTOR'
+            where: {
+                isActive: true,
+                role: 'DOCTOR'
             },
-            select : {
-                id : true,
-                fullName : true,
-                avatar : true,
-                department : {
-                    select : {
-                        id : true,
-                        name : true
+            select: {
+                id: true,
+                fullName: true,
+                avatar: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true
                     }
                 }
             }
@@ -184,7 +184,7 @@ export const appointmentService = {
                     code: true,
                     appointmentDate: true,
                     status: true,
-                    reason : true,
+                    reason: true,
                     patient: {
                         select: {
                             id: true,
@@ -236,9 +236,9 @@ export const appointmentService = {
         const [requests, totalRequests] = await Promise.all([
             prisma.appointmentRequest.findMany({
                 where: whereCondition,
-                take : limit,
-                skip : skip,
-                orderBy : {createdAt : 'desc'},
+                take: limit,
+                skip: skip,
+                orderBy: { createdAt: 'desc' },
                 include: {
                     appointment: true,
                     oldDoctor: true,
@@ -407,9 +407,10 @@ export const appointmentService = {
                 id: Number(requestId)
             },
             include: {
+                appointment : true,
                 newDoctor: true,
                 oldDoctor: true,
-                
+
             }
         })
         if (!request) {
@@ -429,13 +430,14 @@ export const appointmentService = {
             updateData.status = 'CANCELLED'
         }
 
-        await prisma.appointment.update({
-            where: {
-                id: Number(request.appointmentId)
-            },
-            data: updateData
-        }),
-            await prisma.appointmentRequest.update({
+        await prisma.$transaction([
+            prisma.appointment.update({
+                where: {
+                    id: Number(request.appointmentId)
+                },
+                data: updateData
+            }),
+            prisma.appointmentRequest.update({
                 where: { id: request.id },
                 data: {
                     status: 'APPROVED',
@@ -443,6 +445,10 @@ export const appointmentService = {
                     reviewedAt: new Date()
                 }
             })
+        ])
+        if(request.appointment.status === 'COMPLETED' || request.appointment.status === 'WAITING' || request.appointment.status === 'IN_PROGRESS'){
+            throw new BadrequestException('Không thể duyệt yêu cầu này vì lịch đã được tiếp nhận hoặc đã hoàn thành')
+        }
 
         const formatVNDateTime = (isoString) => {
             const d = new Date(isoString)
@@ -472,7 +478,7 @@ export const appointmentService = {
         }
         if (request.type === 'CHANGE_DOCTOR') {
             title = "Yêu cầu dời bác sĩ thành công"
-            content = `Lịch hẹn với BS.${request.oldDate.fullName} đã được dời
+            content = `Lịch hẹn với BS.${request.oldDoctor.fullName} đã được dời
               Sang : BS.${request.newDoctor.fullName}
               Thời gian:
               Từ : ${formatVNDateTime(request.oldDate)}  
@@ -492,9 +498,9 @@ export const appointmentService = {
             where: {
                 id: Number(requestId)
             },
-            include : {
-                oldDoctor : true,
-                newDoctor : true
+            include: {
+                oldDoctor: true,
+                newDoctor: true
             }
         })
         if (!request) {
@@ -508,7 +514,7 @@ export const appointmentService = {
                 reviewedAt: new Date()
             }
         })
-           const formatVNDateTime = (isoString) => {
+        const formatVNDateTime = (isoString) => {
             const d = new Date(isoString)
             return d.toLocaleString("vi-VN", {
                 hour: "2-digit",
@@ -707,8 +713,8 @@ export const appointmentService = {
             }
         }
     },
-    createVitalSign: async (medicalId,appointmentId, data) => {
-        const {bloodPressure, heartRate, temperature, spo2, respiratoryRate, height, weight, note } = data
+    createVitalSign: async (medicalId, appointmentId, data) => {
+        const { bloodPressure, heartRate, temperature, spo2, respiratoryRate, height, weight, note } = data
         const appointment = await prisma.appointment.findUnique({
             where: {
                 id: Number(appointmentId)
