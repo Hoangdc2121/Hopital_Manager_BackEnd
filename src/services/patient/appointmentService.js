@@ -194,7 +194,6 @@ export const appointmentService = {
 
         const appointments = await prisma.appointment.findMany({
             where: {
-                status: 'PENDING',
                 patientId: Number(patientId),
                 appointmentDate: {
                     gt: now
