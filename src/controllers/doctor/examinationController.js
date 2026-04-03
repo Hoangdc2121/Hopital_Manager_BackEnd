@@ -64,11 +64,22 @@ export const examinationController = {
     createPrescriptionAndInvoice: async (req, res, next) => {
         try {
             const medicalRecordId = req.params.medicalRecordId
-            const data = await examinationService.createPrescriptionAndInvoice(medicalRecordId,req.body)
+            const data = await examinationService.createPrescriptionAndInvoice(medicalRecordId, req.body)
             const response = responseSuccess(data, 'Kê toa thuốc của bệnh nhân thành công')
             res.status(response.status).json(response)
         } catch (err) {
             console.error('Kê toa thuốc của bệnh nhân thất bại', err)
+            next(err)
+        }
+    },
+    getAllMedicalRecordDetail: async (req, res, next) => {
+        try {
+            const medicalRecordId = req.params.medicalRecordId
+            const data = await examinationService.getAllMedicalRecordDetail(medicalRecordId)
+            const response = responseSuccess(data, 'Lấy thông tin hồ sơ bệnh án thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Lấy thông tin hồ sơ bệnh án thất bại', err)
             next(err)
         }
     },

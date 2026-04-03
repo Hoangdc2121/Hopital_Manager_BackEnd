@@ -10,5 +10,5 @@ router.post('/examinationPatient/:appointmentId',examinationController.examinati
 router.get('/getInfoVitalSign/:appointmentId',examinationController.getInfoVitalSign)
 router.post('/createMedicalRecord/:appointmentId',examinationController.createMedicalRecord)
 router.post('/createPrescriptionAndInvoice/:medicalRecordId',examinationController.createPrescriptionAndInvoice)
-
+router.get('/getAllMedicalRecordDetail/:medicalRecordId',examinationController.getAllMedicalRecordDetail)
 export default router

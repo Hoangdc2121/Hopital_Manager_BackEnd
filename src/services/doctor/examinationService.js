@@ -156,9 +156,9 @@ export const examinationService = {
             vitalSign
         }
     },
-    createMedicalRecord: async (doctorId,appointmentId, data) => {
+    createMedicalRecord: async (doctorId, appointmentId, data) => {
         validateMissingFields(data, ['symptoms', 'diagnosis', 'conclusion'])
-        const {symptoms, diagnosis, conclusion } = data
+        const { symptoms, diagnosis, conclusion } = data
 
         const appointment = await prisma.appointment.findUnique({
             where: {
@@ -192,8 +192,8 @@ export const examinationService = {
             medicalRecord
         }
     },
-    createPrescriptionAndInvoice: async (medicalRecordId,data) => {
-        const {medicines, note, advice, followUpAt } = data
+    createPrescriptionAndInvoice: async (medicalRecordId, data) => {
+        const { medicines, note, advice, followUpAt } = data
 
         if (!medicalRecordId || !Array.isArray(medicines) || medicines.length === 0) {
             throw new BadrequestException("Thiếu thông tin kê thuốc")
@@ -297,11 +297,105 @@ export const examinationService = {
 
 
             await tx.appointment.update({
-                where: { id:medicalRecord.appointmentId },
+                where: { id: medicalRecord.appointmentId },
                 data: { status: "COMPLETED" }
             })
 
             return { prescription }
         })
     },
+    getAllMedicalRecordDetail: async (medicalRecordId) => {
+        const medicalRecord = await prisma.medicalRecord.findUnique({
+            where: {
+                id: Number(medicalRecordId)
+            },
+            select: {
+                id: true,
+                symptoms: true,
+                diagnosis: true,
+                conclusion: true,
+                createdAt: true,
+                doctor: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        avatar: true,
+                        role: true,
+                        department: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                },
+                patient: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        avatar: true,
+                        role: true,
+                    }
+                },
+                appointment: {
+                    select: {
+                        id: true,
+                        code: true,
+                        status: true,
+                        vitalSigns: {
+                            select: {
+                                id: true,
+                                bloodPressure: true,
+                                heartRate: true,
+                                temperature: true,
+                                spo2: true,
+                                respiratoryRate: true,
+                                height: true,
+                                weight: true,
+                                note: true,
+                                recordedBy: {
+                                    select: {
+                                        id: true,
+                                        fullName: true,
+                                        avatar: true,
+                                        role: true
+                                    }
+                                }
+                            }
+
+                        }
+                    },
+                },
+                    prescriptions: {
+                        select: {
+                            id: true,
+                            note: true,
+                            advice: true,
+                            followUpAt: true,
+                            items: {
+                                select: {
+                                    dosage: true,
+                                    days: true,
+                                    quantity: true,
+                                    price : true,
+                                    medicine: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+            }
+        })
+
+        if (!medicalRecord) {
+            throw new NotFoundException('Không tìm thấy hồ sơ bệnh án')
+        }
+        return {
+            medicalRecord
+        }
+    }
 }
