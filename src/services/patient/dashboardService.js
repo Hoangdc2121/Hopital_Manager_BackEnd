@@ -98,6 +98,7 @@ export const dashboardService = {
                 id: true,
                 code: true,
                 appointmentDate: true,
+                status: true,
                 department: {
                     select: {
                         id: true,
