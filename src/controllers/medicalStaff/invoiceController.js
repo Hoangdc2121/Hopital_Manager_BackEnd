@@ -20,7 +20,7 @@ export const invoiceController = {
         try {
             const invoiceId = req.params.invoiceId
             const medicalId = req.user.id
-            const data = await invoiceService.ConfirmPaymentInvoice(invoiceId, medicalId)
+            const data = await invoiceService.ConfirmPaymentInvoice(invoiceId, medicalId,req.body)
             const response = responseSuccess(data, 'Xác nhận thanh toán thành công')
             res.status(response.status).json(response)
         } catch (err) {

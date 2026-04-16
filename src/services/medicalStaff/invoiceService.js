@@ -46,7 +46,11 @@ export const invoiceService = {
             }
         }
     },
-    ConfirmPaymentInvoice: async (invoiceId,medicalId) => {
+    ConfirmPaymentInvoice: async (invoiceId,medicalId,data) => {
+        const {paymentStatus} = data
+        if(!['CASH','VNPAY'].includes(paymentStatus)) {
+            throw new BadrequestException('Phương thức thanh toán không hợp lệ')
+        }
         const invoice = await prisma.invoice.findUnique({
             where : {
                 id : Number(invoiceId)
@@ -69,7 +73,7 @@ export const invoiceService = {
                 patientId : invoice.appointment.patientId,
                 medicalStaffId : medicalId,
                 amount : invoice.totalAmount,
-                method : 'CASH',
+                method : paymentStatus,
                 status : 'SUCCESS',
                 paidAt : new Date()
             }
