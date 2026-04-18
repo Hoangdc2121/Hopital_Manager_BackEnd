@@ -276,6 +276,9 @@ export const accountService = {
     },
     resetPasswordAccount: async (accountId, data) => {
         const { newPassword } = data
+        if (typeof newPassword !== 'string' || newPassword.trim() === '') {
+            throw new BadrequestException('Mật khẩu mới không được để trống')
+        }
         validatePassword(newPassword)
         const account = await prisma.user.findUnique({
             where: {
@@ -286,19 +289,13 @@ export const accountService = {
             throw new NotFoundException('Không tìm thấy người dùng này')
         }
         const hashPassword = await bcrypt.hash(newPassword, 10)
-        const resetPasswordAccount = await prisma.user.update({
+        await prisma.user.update({
             where: {
                 id: Number(accountId)
             },
             data: {
                 password: hashPassword
             },
-            select: {
-                password: true
-            }
         })
-        return {
-            resetPasswordAccount
-        }
     }
 }

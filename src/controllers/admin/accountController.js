@@ -85,7 +85,7 @@ export const accountController = {
     },
     resetPasswordAccount: async (req,res,next) => {
         try {
-            const accountId = req.user.id 
+            const accountId = req.params.accountId
             const data = await accountService.resetPasswordAccount(accountId,req.body)
             const response = responseSuccess(data, 'Đặt lại mật khẩu tài khoản thành công')
             res.status(response.status).json(response)
