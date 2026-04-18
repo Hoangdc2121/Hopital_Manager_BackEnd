@@ -2,88 +2,92 @@ import { BadrequestException, NotFoundException } from "../../common/helpers/exc
 import prisma from "../../common/prisma/initPrisma.js";
 
 export const invoiceService = {
-    getAllInvoices: async (search,status,page) => {
+    getAllInvoices: async (search, status, page) => {
         const limit = 10;
         const skip = (Number(page) - 1) * limit
 
-        const whereCondition ={
+        const whereCondition = {
             ...(search ? {
-                appointment : {
-                    patient : {
-                        fullName : search
+                appointment: {
+                    patient: {
+                        fullName: search
                     }
                 }
-            }: {}),
+            } : {}),
             ...(status ? {
-                status : status
+                status: status
             } : {})
         }
-        const [invoices,totalInvoices] = await Promise.all([
+        const [invoices, totalInvoices] = await Promise.all([
             prisma.invoice.findMany({
-            where : whereCondition,
-            take : limit,
-            skip : skip,
-            include : {
-                appointment : {
-                    include : {
-                        patient : true,
-                        doctor : true
+                where: whereCondition,
+                take: limit,
+                skip: skip,
+                include: {
+                    appointment: {
+                        include: {
+                            patient: true,
+                            doctor: {
+                                include: {
+                                    department: true
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        }),
-        prisma.invoice.count({
-            where : whereCondition
-        })
-        ]) 
+            }),
+            prisma.invoice.count({
+                where: whereCondition
+            })
+        ])
         return {
             invoices,
             pagination: {
-                page : Number(page),
-                limit : limit,
-                total : totalInvoices,
-                totalPages: Math.ceil(totalInvoices/limit)
+                page: Number(page),
+                limit: limit,
+                total: totalInvoices,
+                totalPages: Math.ceil(totalInvoices / limit)
             }
         }
     },
-    ConfirmPaymentInvoice: async (invoiceId,medicalId,data) => {
-        const {paymentStatus} = data
-        if(!['CASH','VNPAY'].includes(paymentStatus)) {
+    ConfirmPaymentInvoice: async (invoiceId, medicalId, data) => {
+        const { paymentStatus } = data
+        if (!['CASH', 'VNPAY'].includes(paymentStatus)) {
             throw new BadrequestException('Phương thức thanh toán không hợp lệ')
         }
         const invoice = await prisma.invoice.findUnique({
-            where : {
-                id : Number(invoiceId)
+            where: {
+                id: Number(invoiceId)
             },
-            include : {
-                appointment : true
+            include: {
+                appointment: true
             }
         })
 
-        if(!invoice) {
+        if (!invoice) {
             throw new NotFoundException('Không tìm thấy hóa đơn này')
         }
-        if(invoice.status === 'PAID') {
+        if (invoice.status === 'PAID') {
             throw new BadrequestException('Hóa đơn này đã thanh toán')
         }
 
         const succesPaymentInvoice = await prisma.payment.create({
-            data : {
-                invoiceId : Number(invoiceId),
-                patientId : invoice.appointment.patientId,
-                medicalStaffId : medicalId,
-                amount : invoice.totalAmount,
-                method : paymentStatus,
-                status : 'SUCCESS',
-                paidAt : new Date()
+            data: {
+                invoiceId: Number(invoiceId),
+                patientId: invoice.appointment.patientId,
+                medicalStaffId: medicalId,
+                amount: invoice.totalAmount,
+                method: paymentStatus,
+                status: 'SUCCESS',
+                paidAt: new Date()
             }
         })
         await prisma.invoice.update({
-            where : {
-                id : Number(invoiceId)
+            where: {
+                id: Number(invoiceId)
             },
-            data : {
-                status : 'PAID'
+            data: {
+                status: 'PAID'
             }
         })
         return {
