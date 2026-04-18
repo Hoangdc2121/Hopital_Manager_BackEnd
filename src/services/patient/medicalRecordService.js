@@ -2,10 +2,11 @@ import { NotFoundException } from "../../common/helpers/exception.helper.js"
 import prisma from "../../common/prisma/initPrisma.js"
 
 export const medicalRecordService = {
-    getAllAppointmentsSucces: async () => {
+    getAllAppointmentsSucces: async (patientId) => {
         const appointments = await prisma.appointment.findMany({
             where: {
-                status: "COMPLETED"
+                status: "COMPLETED",
+                patientId : Number(patientId)
             },
             orderBy: { appointmentDate: 'desc' },
             include: {

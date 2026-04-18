@@ -4,7 +4,8 @@ import {medicalRecordService } from "../../services/patient/medicalRecordService
 export const medicalRecordController = {
     getAllAppointmentsSucces: async (req,res,next) => {
         try {
-            const data = await medicalRecordService.getAllAppointmentsSucces()
+            const patientId = req.user.id
+            const data = await medicalRecordService.getAllAppointmentsSucces(patientId)
             const response = responseSuccess(data,'Lấy danh sách lịch khám của người này đã khám thành công')
             res.status(response.status).json(response)
         } catch (err) {
