@@ -11,4 +11,5 @@ router.get('/getAllAcounts',accountController.getAllAcounts)
 router.get('/getAllPatients',accountController.getAllPatients)
 router.get('/getOverViewPatient',accountController.getOverViewPatient)
 router.get('/getOverViewStaff',accountController.getOverViewStaff)
+router.put('/resetPasswordAccount/:accountId',accountController.resetPasswordAccount)
 export default router

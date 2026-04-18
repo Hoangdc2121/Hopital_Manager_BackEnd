@@ -263,7 +263,7 @@ export const accountService = {
                     role: {
                         in: ['DOCTOR', 'MEDICAL_STAFF']
                     },
-                    isActive : false
+                    isActive: false
                 }
             }),
         ])
@@ -272,6 +272,32 @@ export const accountService = {
             totalDoctors,
             totalMedicalStaffs,
             staffsLock
+        }
+    },
+    resetPasswordAccount: async (accountId, data) => {
+        const { newPassword } = data
+        const account = await prisma.user.findUnique({
+            where: {
+                id: Number(accountId)
+            }
+        })
+        if (!account) {
+            throw new NotFoundException('Không tìm thấy người dùng này')
+        }
+        const hashPassword = await bcrypt.hash(newPassword, 10)
+        const resetPasswordAccount = await prisma.user.update({
+            where: {
+                id: Number(accountId)
+            },
+            data: {
+                password: hashPassword
+            },
+            select: {
+                password: true
+            }
+        })
+        return {
+            resetPasswordAccount
         }
     }
 }

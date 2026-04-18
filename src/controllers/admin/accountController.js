@@ -82,6 +82,16 @@ export const accountController = {
             console.error('Lấy tổng quan nhân sự có phân trang thất bại', err)
             next(err)
         }
+    },
+    resetPasswordAccount: async (req,res,next) => {
+        try {
+            const accountId = req.user.id 
+            const data = await accountService.resetPasswordAccount(accountId,req.body)
+            const response = responseSuccess(data, 'Đặt lại mật khẩu tài khoản thành công')
+            res.status(response.status).json(response)
+        } catch (err) {
+            console.error('Đặt lại mật khẩu tài khoản thất bại', err)
+            next(err)
+        }
     }
-
 }
