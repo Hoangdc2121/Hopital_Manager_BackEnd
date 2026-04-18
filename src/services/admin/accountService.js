@@ -276,6 +276,7 @@ export const accountService = {
     },
     resetPasswordAccount: async (accountId, data) => {
         const { newPassword } = data
+        validatePassword(newPassword)
         const account = await prisma.user.findUnique({
             where: {
                 id: Number(accountId)
