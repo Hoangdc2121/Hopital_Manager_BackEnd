@@ -5,29 +5,35 @@ const height = 600
 const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height })
 
 export const chartService = {
-
-
-  revenueAppointmentBar: async (months) => {
+  revenueAppointmentLine: async (months) => {
     const labels = months.map(m => `Tháng ${m.month}`)
     const revenueData = months.map(m => m.revenue)
     const appointmentData = months.map(m => m.appointments)
 
     const config = {
-      type: "bar",
+      type: "line", // 🔥 đổi bar -> line
       data: {
         labels,
         datasets: [
           {
             label: "Doanh thu (VND)",
             data: revenueData,
-            backgroundColor: "#0EA5E9",
-            yAxisID: "yRevenue"
+            borderColor: "#0EA5E9",
+            backgroundColor: "rgba(14,165,233,0.2)",
+            yAxisID: "yRevenue",
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4
           },
           {
             label: "Lượt khám",
             data: appointmentData,
-            backgroundColor: "#F97316",
-            yAxisID: "yAppointment"
+            borderColor: "#F97316",
+            backgroundColor: "rgba(249,115,22,0.2)",
+            yAxisID: "yAppointment",
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4
           }
         ]
       },
@@ -41,21 +47,14 @@ export const chartService = {
             type: "linear",
             position: "left",
             title: { display: true, text: "Doanh thu (VND)" },
-            ticks: {
-              beginAtZero: true,
-              stepSize: 50000 // tùy chỉnh
-            }
+            beginAtZero: true
           },
           yAppointment: {
             type: "linear",
             position: "right",
             title: { display: true, text: "Lượt khám" },
-            ticks: {
-              beginAtZero: true,
-              stepSize: 1
-            },
-            grid: { drawOnChartArea: false },
-            suggestedMax: 5 // giới hạn tối đa lượt khám cho biểu đồ nhìn cân đối
+            beginAtZero: true,
+            grid: { drawOnChartArea: false }
           }
         }
       }

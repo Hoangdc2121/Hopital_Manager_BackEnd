@@ -60,7 +60,7 @@ export const reportService = {
     const departmentStats = await dashboardService.getAppointmentByDepartment()
 
     // ==== TẠO BIỂU ĐỒ =====
-    const revenueChart = await chartService.revenueAppointmentBar(chartData)
+    const revenueChart = await chartService.revenueAppointmentLine(chartData)
     const departmentChart = await chartService.appointmentDepartmentPie(departmentStats.data)
 
     // ==== BẢNG DỮ LIỆU DOANH THU & LƯỢT KHÁM =====
